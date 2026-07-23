@@ -23,6 +23,11 @@ export function openDb(dbPath = process.env.FFT_DB_PATH ?? defaultDbPath()) {
 
 export function migrate(sqlite: DatabaseSync) {
   sqlite.exec(`
+    CREATE TABLE IF NOT EXISTS schema_migrations (
+      version INTEGER PRIMARY KEY,
+      applied_at TEXT NOT NULL
+    );
+
     CREATE TABLE IF NOT EXISTS companies (
       id TEXT PRIMARY KEY,
       name TEXT NOT NULL,
@@ -146,7 +151,8 @@ export function migrate(sqlite: DatabaseSync) {
       occurred_at TEXT NOT NULL,
       source_url TEXT,
       severity TEXT NOT NULL DEFAULT 'info',
-      tags TEXT NOT NULL
+      tags TEXT NOT NULL,
+      origin TEXT NOT NULL DEFAULT 'curated'
     );
 
     CREATE TABLE IF NOT EXISTS sources (
@@ -178,7 +184,35 @@ export function migrate(sqlite: DatabaseSync) {
       key TEXT PRIMARY KEY,
       value TEXT NOT NULL
     );
+
+    CREATE TABLE IF NOT EXISTS roadmap_items (
+      id TEXT PRIMARY KEY,
+      title TEXT NOT NULL,
+      summary TEXT NOT NULL,
+      product_pillar TEXT NOT NULL,
+      horizon TEXT NOT NULL,
+      confidence TEXT NOT NULL,
+      owner_team TEXT NOT NULL,
+      desired_outcome TEXT NOT NULL,
+      success_signals TEXT NOT NULL,
+      linked_gap_ids TEXT NOT NULL,
+      linked_opportunity_ids TEXT NOT NULL,
+      dependencies TEXT NOT NULL,
+      rationale TEXT NOT NULL,
+      source_urls TEXT NOT NULL
+    );
   `);
+
+  const eventColumns = sqlite.prepare(`PRAGMA table_info(events)`).all() as Array<{
+    name: string;
+  }>;
+  if (!eventColumns.some((column) => column.name === "origin")) {
+    sqlite.exec(`ALTER TABLE events ADD COLUMN origin TEXT NOT NULL DEFAULT 'curated'`);
+  }
+  sqlite.exec(`UPDATE events SET origin = 'collector' WHERE id LIKE 'scrape-%'`);
+  sqlite
+    .prepare(`INSERT OR IGNORE INTO schema_migrations (version, applied_at) VALUES (?, ?)`)
+    .run(1, new Date().toISOString());
 }
 
 export function parseJsonArray(value: string | null | undefined): string[] {

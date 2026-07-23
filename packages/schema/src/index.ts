@@ -1,5 +1,9 @@
 import { z } from "zod";
 
+export const EntityIdSchema = z
+  .string()
+  .regex(/^[a-z0-9][a-z0-9-]*$/, "IDs must be lowercase URL-safe slugs");
+
 // ── Enums ──────────────────────────────────────────────────────────────────
 
 export const RegionSchema = z.enum(["western", "chinese", "other"]);
@@ -120,6 +124,22 @@ export const ModalitySchema = z.enum([
 ]);
 export type Modality = z.infer<typeof ModalitySchema>;
 
+export const ProductPillarSchema = z.enum([
+  "core_api",
+  "work",
+  "build",
+  "imagine",
+  "enterprise",
+  "ecosystem",
+]);
+export type ProductPillar = z.infer<typeof ProductPillarSchema>;
+
+export const RoadmapHorizonSchema = z.enum(["now", "next", "later"]);
+export type RoadmapHorizon = z.infer<typeof RoadmapHorizonSchema>;
+
+export const ConfidenceSchema = z.enum(["high", "medium", "low"]);
+export type Confidence = z.infer<typeof ConfidenceSchema>;
+
 // ── Scoring ────────────────────────────────────────────────────────────────
 
 export const SCORING_WEIGHTS = {
@@ -149,7 +169,7 @@ export function priorityFromScore(score: number): Priority {
 // ── Seed schemas ───────────────────────────────────────────────────────────
 
 export const CompanySeedSchema = z.object({
-  id: z.string().min(1),
+  id: EntityIdSchema,
   name: z.string().min(1),
   region: RegionSchema,
   type: CompanyTypeSchema,
@@ -160,8 +180,8 @@ export const CompanySeedSchema = z.object({
 export type CompanySeed = z.infer<typeof CompanySeedSchema>;
 
 export const ModelSeedSchema = z.object({
-  id: z.string().min(1),
-  companyId: z.string().min(1),
+  id: EntityIdSchema,
+  companyId: EntityIdSchema,
   name: z.string().min(1),
   slug: z.string().min(1),
   releaseDate: z.string().optional(),
@@ -178,15 +198,15 @@ export const ModelSeedSchema = z.object({
   consumerPlans: z.string().optional(),
   benchmarks: z.record(z.union([z.string(), z.number()])).optional(),
   capabilityDelta: z.string().optional(),
-  sourceUrls: z.array(z.string()).default([]),
+  sourceUrls: z.array(z.string().url()).default([]),
   lastVerifiedAt: z.string().optional(),
   notes: z.string().optional(),
 });
 export type ModelSeed = z.infer<typeof ModelSeedSchema>;
 
 export const ProductSeedSchema = z.object({
-  id: z.string().min(1),
-  companyId: z.string().min(1),
+  id: EntityIdSchema,
+  companyId: EntityIdSchema,
   name: z.string().min(1),
   category: ProductCategorySchema,
   description: z.string().optional(),
@@ -194,13 +214,13 @@ export const ProductSeedSchema = z.object({
   pricingNotes: z.string().optional(),
   launchDate: z.string().optional(),
   status: z.string().default("ga"),
-  sourceUrls: z.array(z.string()).default([]),
+  sourceUrls: z.array(z.string().url()).default([]),
   notes: z.string().optional(),
 });
 export type ProductSeed = z.infer<typeof ProductSeedSchema>;
 
 export const FeatureSeedSchema = z.object({
-  id: z.string().min(1),
+  id: EntityIdSchema,
   slug: z.string().min(1),
   name: z.string().min(1),
   category: FeatureCategorySchema,
@@ -210,17 +230,17 @@ export const FeatureSeedSchema = z.object({
 export type FeatureSeed = z.infer<typeof FeatureSeedSchema>;
 
 export const MatrixCellSeedSchema = z.object({
-  companyId: z.string().min(1),
-  featureId: z.string().min(1),
+  companyId: EntityIdSchema,
+  featureId: EntityIdSchema,
   supportLevel: SupportLevelSchema,
   notes: z.string().optional(),
-  evidenceUrl: z.string().optional(),
+  evidenceUrl: z.string().url().optional(),
   asOf: z.string().optional(),
 });
 export type MatrixCellSeed = z.infer<typeof MatrixCellSeedSchema>;
 
 export const GapSeedSchema = z.object({
-  id: z.string().min(1),
+  id: EntityIdSchema,
   title: z.string().min(1),
   description: z.string().min(1),
   competitorExamples: z.array(z.string()).default([]),
@@ -232,16 +252,16 @@ export const GapSeedSchema = z.object({
   ownerTeam: OwnerTeamSchema,
   status: GapStatusSchema.default("open"),
   seeded: z.boolean().default(true),
-  sourceUrls: z.array(z.string()).default([]),
+  sourceUrls: z.array(z.string().url()).default([]),
 });
 export type GapSeed = z.infer<typeof GapSeedSchema>;
 
 export const OpportunitySeedSchema = z.object({
-  id: z.string().min(1),
+  id: EntityIdSchema,
   title: z.string().min(1),
   description: z.string().optional(),
-  linkedGapIds: z.array(z.string()).default([]),
-  linkedFinancialSignalIds: z.array(z.string()).default([]),
+  linkedGapIds: z.array(EntityIdSchema).default([]),
+  linkedFinancialSignalIds: z.array(EntityIdSchema).default([]),
   marketCategory: z.string().optional(),
   estimatedTamNotes: z.string().optional(),
   recommendedMove: z.string().min(1),
@@ -251,8 +271,8 @@ export const OpportunitySeedSchema = z.object({
 export type OpportunitySeed = z.infer<typeof OpportunitySeedSchema>;
 
 export const FinancialSignalSeedSchema = z.object({
-  id: z.string().min(1),
-  companyId: z.string().optional(),
+  id: EntityIdSchema,
+  companyId: EntityIdSchema.optional(),
   signalType: SignalTypeSchema,
   period: z.string().optional(),
   metricName: z.string().min(1),
@@ -260,7 +280,7 @@ export const FinancialSignalSeedSchema = z.object({
   unit: z.string().optional(),
   isEstimate: z.boolean().default(false),
   quote: z.string().optional(),
-  sourceUrl: z.string().optional(),
+  sourceUrl: z.string().url().optional(),
   sourceReliability: SourceReliabilitySchema.default("reputable_press"),
   asOf: z.string().optional(),
   implicationForGrok: z.string().optional(),
@@ -268,17 +288,52 @@ export const FinancialSignalSeedSchema = z.object({
 export type FinancialSignalSeed = z.infer<typeof FinancialSignalSeedSchema>;
 
 export const EventSeedSchema = z.object({
-  id: z.string().min(1),
+  id: EntityIdSchema,
   eventType: EventTypeSchema,
-  companyId: z.string().optional(),
+  companyId: EntityIdSchema.optional(),
   title: z.string().min(1),
   summary: z.string().optional(),
   occurredAt: z.string().min(1),
-  sourceUrl: z.string().optional(),
+  sourceUrl: z.string().url().optional(),
   severity: SeveritySchema.default("info"),
   tags: z.array(z.string()).default([]),
 });
 export type EventSeed = z.infer<typeof EventSeedSchema>;
+
+export const RoadmapItemSeedSchema = z.object({
+  id: EntityIdSchema,
+  title: z.string().min(1),
+  summary: z.string().min(1),
+  productPillar: ProductPillarSchema,
+  horizon: RoadmapHorizonSchema,
+  confidence: ConfidenceSchema,
+  ownerTeam: OwnerTeamSchema,
+  desiredOutcome: z.string().min(1),
+  successSignals: z.array(z.string().min(1)).min(1),
+  linkedGapIds: z.array(EntityIdSchema).default([]),
+  linkedOpportunityIds: z.array(EntityIdSchema).default([]),
+  dependencies: z.array(z.string().min(1)).default([]),
+  rationale: z.string().min(1),
+  sourceUrls: z.array(z.string().url()).default([]),
+});
+export type RoadmapItemSeed = z.infer<typeof RoadmapItemSeedSchema>;
+
+export const SourceConfigSchema = z.object({
+  id: EntityIdSchema,
+  companyId: EntityIdSchema.optional(),
+  name: z.string().min(1),
+  url: z.string().url(),
+  sourceType: z.string().min(1),
+  cadence: z.enum(["realtime", "daily", "weekly", "quarterly"]).default("daily"),
+  enabled: z.boolean().default(true),
+  notes: z.string().optional(),
+});
+export type SourceConfig = z.infer<typeof SourceConfigSchema>;
+
+export const SourcesDocumentSchema = z.object({
+  sources: z.array(SourceConfigSchema),
+});
+export type SourcesDocument = z.infer<typeof SourcesDocumentSchema>;
 
 export const TrackerSeedSchema = z.object({
   baselineDate: z.string(),
@@ -292,5 +347,103 @@ export const TrackerSeedSchema = z.object({
   opportunities: z.array(OpportunitySeedSchema),
   financialSignals: z.array(FinancialSignalSeedSchema),
   events: z.array(EventSeedSchema),
+  roadmapItems: z.array(RoadmapItemSeedSchema).default([]),
 });
 export type TrackerSeed = z.infer<typeof TrackerSeedSchema>;
+
+export type DataValidationResult = {
+  errors: string[];
+  warnings: string[];
+  missingEvidence: string[];
+};
+
+export function validateTrackerData(
+  seed: TrackerSeed,
+  sourcesDocument: SourcesDocument,
+  allowedMissingEvidence: readonly string[] = [],
+): DataValidationResult {
+  const errors: string[] = [];
+  const allowed = new Set(allowedMissingEvidence);
+  const companyIds = new Set(seed.companies.map((item) => item.id));
+  const featureIds = new Set(seed.features.map((item) => item.id));
+  const gapIds = new Set(seed.gaps.map((item) => item.id));
+  const opportunityIds = new Set(seed.opportunities.map((item) => item.id));
+  const financialIds = new Set(seed.financialSignals.map((item) => item.id));
+
+  const checkDuplicates = (label: string, ids: string[]) => {
+    const seen = new Set<string>();
+    for (const id of ids) {
+      if (seen.has(id)) errors.push(`Duplicate ${label} ID: ${id}`);
+      seen.add(id);
+    }
+  };
+
+  for (const [label, items] of Object.entries({
+    company: seed.companies,
+    model: seed.models,
+    product: seed.products,
+    feature: seed.features,
+    gap: seed.gaps,
+    opportunity: seed.opportunities,
+    financial: seed.financialSignals,
+    event: seed.events,
+    roadmap: seed.roadmapItems,
+    source: sourcesDocument.sources,
+  })) {
+    checkDuplicates(label, items.map((item) => item.id));
+  }
+  checkDuplicates(
+    "matrix cell",
+    seed.matrix.map((cell) => `${cell.companyId}:${cell.featureId}`),
+  );
+
+  const requireRef = (kind: string, owner: string, id: string, valid: Set<string>) => {
+    if (!valid.has(id)) errors.push(`${owner} references missing ${kind}: ${id}`);
+  };
+  for (const model of seed.models) requireRef("company", `model:${model.id}`, model.companyId, companyIds);
+  for (const product of seed.products) requireRef("company", `product:${product.id}`, product.companyId, companyIds);
+  for (const cell of seed.matrix) {
+    requireRef("company", `matrix:${cell.companyId}:${cell.featureId}`, cell.companyId, companyIds);
+    requireRef("feature", `matrix:${cell.companyId}:${cell.featureId}`, cell.featureId, featureIds);
+  }
+  for (const signal of seed.financialSignals) {
+    if (signal.companyId) requireRef("company", `financial:${signal.id}`, signal.companyId, companyIds);
+  }
+  for (const event of seed.events) {
+    if (event.companyId) requireRef("company", `event:${event.id}`, event.companyId, companyIds);
+  }
+  for (const source of sourcesDocument.sources) {
+    if (source.companyId) requireRef("company", `source:${source.id}`, source.companyId, companyIds);
+  }
+  for (const opportunity of seed.opportunities) {
+    for (const id of opportunity.linkedGapIds) requireRef("gap", `opportunity:${opportunity.id}`, id, gapIds);
+    for (const id of opportunity.linkedFinancialSignalIds) {
+      requireRef("financial signal", `opportunity:${opportunity.id}`, id, financialIds);
+    }
+  }
+  for (const item of seed.roadmapItems) {
+    for (const id of item.linkedGapIds) requireRef("gap", `roadmap:${item.id}`, id, gapIds);
+    for (const id of item.linkedOpportunityIds) {
+      requireRef("opportunity", `roadmap:${item.id}`, id, opportunityIds);
+    }
+  }
+
+  const missingEvidence = [
+    ...seed.models.filter((item) => item.sourceUrls.length === 0).map((item) => `model:${item.id}`),
+    ...seed.products.filter((item) => item.sourceUrls.length === 0).map((item) => `product:${item.id}`),
+    ...seed.gaps.filter((item) => item.sourceUrls.length === 0).map((item) => `gap:${item.id}`),
+    ...seed.matrix.filter((item) => !item.evidenceUrl).map((item) => `matrix:${item.companyId}:${item.featureId}`),
+    ...seed.financialSignals.filter((item) => !item.sourceUrl).map((item) => `financial:${item.id}`),
+    ...seed.events.filter((item) => !item.sourceUrl).map((item) => `event:${item.id}`),
+  ].sort();
+  const newDebt = missingEvidence.filter((key) => !allowed.has(key));
+  for (const key of newDebt) errors.push(`New claim is missing evidence: ${key}`);
+
+  return {
+    errors,
+    warnings: missingEvidence
+      .filter((key) => allowed.has(key))
+      .map((key) => `Existing evidence debt: ${key}`),
+    missingEvidence,
+  };
+}

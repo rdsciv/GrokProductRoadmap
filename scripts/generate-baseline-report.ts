@@ -13,11 +13,14 @@ import {
   getFinancialSignals,
   getEvents,
   getModels,
+  getRoadmapItems,
+  getPortfolioSummary,
 } from "../packages/db/src/index.ts";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(__dirname, "..");
-const outPath = path.join(repoRoot, "reports", "baseline-2026-07.md");
+const outPath = process.env.FFT_REPORT_OUT ?? path.join(repoRoot, "reports", "baseline-2026-07.md");
+const generatedAt = process.env.FFT_REPORT_DATE ?? new Date().toISOString();
 
 const { sqlite } = openDb();
 migrate(sqlite);
@@ -28,13 +31,15 @@ const oppRows = getOpportunities(sqlite);
 const finRows = getFinancialSignals(sqlite);
 const eventRows = getEvents(sqlite, 100);
 const modelRows = getModels(sqlite);
+const roadmapRows = getRoadmapItems(sqlite);
+const portfolio = getPortfolioSummary(sqlite);
 
 const lines: string[] = [];
 lines.push("# Frontier Feature Tracker — July 2026 Baseline Report");
 lines.push("");
 lines.push(`**Baseline date:** ${metaMap.baseline_date ?? "2026-07-01"}  `);
 lines.push(`**As of:** ${metaMap.as_of ?? "2026-07-22"}  `);
-lines.push(`**Generated:** ${new Date().toISOString()}`);
+lines.push(`**Generated:** ${generatedAt}`);
 lines.push("");
 lines.push(
   "Internal competitive intelligence for xAI / SpaceXAI product, GTM, and leadership. Every seeded claim should be re-verified against primary sources before executive decisions.",
@@ -45,6 +50,20 @@ lines.push("");
 lines.push(
   "Western competitors have moved from model releases alone into **desktop Work super-apps**, **funded partner channels**, **coding-agent packaging**, and **hardware amplification**. Chinese labs are shipping **open-weight MoE frontier models** at high cadence and low cost. Grok has strong models (4.5), Grok Build, Imagine, and real enterprise identity features — gaps are primarily **packaging, visibility, channel, desktop, and Cursor productization**.",
 );
+lines.push("");
+lines.push("## Proposed suite roadmap");
+lines.push("");
+lines.push(
+  `Directional strategy—not committed delivery. ${portfolio.roadmapItems} recommendations across ${portfolio.pillars} product pillars.`,
+);
+lines.push("");
+lines.push("| Horizon | Pillar | Recommendation | Confidence | Owner | Desired outcome |");
+lines.push("|---|---|---|---|---|---|");
+for (const item of roadmapRows) {
+  lines.push(
+    `| ${item.horizon} | ${item.productPillar} | ${item.title} | ${item.confidence} | ${item.ownerTeam} | ${item.desiredOutcome} |`,
+  );
+}
 lines.push("");
 lines.push("## Priority gaps (scored)");
 lines.push("");

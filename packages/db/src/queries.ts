@@ -1,13 +1,19 @@
-import type { DatabaseSync } from "node:sqlite";
+import type { DatabaseSync, SQLInputValue } from "node:sqlite";
+import type {
+  Confidence,
+  OwnerTeam,
+  ProductPillar,
+  RoadmapHorizon,
+} from "@fft/schema";
 import { parseJsonArray, parseJsonObject } from "./client";
 
 type Row = Record<string, unknown>;
 
-function all(sqlite: DatabaseSync, sql: string, params: unknown[] = []): Row[] {
+function all(sqlite: DatabaseSync, sql: string, params: SQLInputValue[] = []): Row[] {
   return sqlite.prepare(sql).all(...params) as Row[];
 }
 
-function one(sqlite: DatabaseSync, sql: string, params: unknown[] = []): Row | undefined {
+function one(sqlite: DatabaseSync, sql: string, params: SQLInputValue[] = []): Row | undefined {
   return sqlite.prepare(sql).get(...params) as Row | undefined;
 }
 
@@ -135,6 +141,24 @@ export type Event = {
   sourceUrl: string | null;
   severity: string;
   tags: string[];
+  origin: "curated" | "collector";
+};
+
+export type RoadmapItem = {
+  id: string;
+  title: string;
+  summary: string;
+  productPillar: ProductPillar;
+  horizon: RoadmapHorizon;
+  confidence: Confidence;
+  ownerTeam: OwnerTeam;
+  desiredOutcome: string;
+  successSignals: string[];
+  linkedGapIds: string[];
+  linkedOpportunityIds: string[];
+  dependencies: string[];
+  rationale: string;
+  sourceUrls: string[];
 };
 
 export type Source = {
@@ -292,6 +316,26 @@ function mapEvent(r: Row): Event {
     sourceUrl: (r.source_url as string) ?? null,
     severity: String(r.severity),
     tags: parseJsonArray(r.tags as string),
+    origin: String(r.origin ?? "curated") as Event["origin"],
+  };
+}
+
+function mapRoadmapItem(r: Row): RoadmapItem {
+  return {
+    id: String(r.id),
+    title: String(r.title),
+    summary: String(r.summary),
+    productPillar: String(r.product_pillar) as ProductPillar,
+    horizon: String(r.horizon) as RoadmapHorizon,
+    confidence: String(r.confidence) as Confidence,
+    ownerTeam: String(r.owner_team) as OwnerTeam,
+    desiredOutcome: String(r.desired_outcome),
+    successSignals: parseJsonArray(r.success_signals as string),
+    linkedGapIds: parseJsonArray(r.linked_gap_ids as string),
+    linkedOpportunityIds: parseJsonArray(r.linked_opportunity_ids as string),
+    dependencies: parseJsonArray(r.dependencies as string),
+    rationale: String(r.rationale),
+    sourceUrls: parseJsonArray(r.source_urls as string),
   };
 }
 
@@ -389,6 +433,98 @@ export function getSources(sqlite: DatabaseSync): Source[] {
   return all(sqlite, `SELECT * FROM sources ORDER BY name`).map(mapSource);
 }
 
+export type RoadmapFilters = Partial<
+  Pick<RoadmapItem, "productPillar" | "horizon" | "confidence" | "ownerTeam">
+>;
+
+export function getRoadmapItems(
+  sqlite: DatabaseSync,
+  filters: RoadmapFilters = {},
+): RoadmapItem[] {
+  const conditions: string[] = [];
+  const params: SQLInputValue[] = [];
+  for (const [column, selected] of [
+    ["product_pillar", filters.productPillar],
+    ["horizon", filters.horizon],
+    ["confidence", filters.confidence],
+    ["owner_team", filters.ownerTeam],
+  ] as const) {
+    if (selected) {
+      conditions.push(`${column} = ?`);
+      params.push(selected);
+    }
+  }
+  return all(
+    sqlite,
+    `SELECT * FROM roadmap_items
+     ${conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : ""}
+     ORDER BY CASE horizon WHEN 'now' THEN 0 WHEN 'next' THEN 1 ELSE 2 END,
+              CASE product_pillar
+                WHEN 'core_api' THEN 0 WHEN 'work' THEN 1 WHEN 'build' THEN 2
+                WHEN 'imagine' THEN 3 WHEN 'enterprise' THEN 4 ELSE 5 END,
+              title`,
+    params,
+  ).map(mapRoadmapItem);
+}
+
+export function getPortfolioSummary(sqlite: DatabaseSync) {
+  const roadmap = getRoadmapItems(sqlite);
+  const gaps = getGaps(sqlite).filter((gap) => gap.status !== "won" && gap.status !== "wontfix");
+  return {
+    roadmapItems: roadmap.length,
+    now: roadmap.filter((item) => item.horizon === "now").length,
+    next: roadmap.filter((item) => item.horizon === "next").length,
+    later: roadmap.filter((item) => item.horizon === "later").length,
+    highConfidence: roadmap.filter((item) => item.confidence === "high").length,
+    highGaps: gaps.filter((gap) => gap.priority === "high").length,
+    pillars: new Set(roadmap.map((item) => item.productPillar)).size,
+  };
+}
+
+export type CompetitiveCoverage = {
+  companyId: string;
+  companyName: string;
+  region: string;
+  full: number;
+  partial: number;
+  missing: number;
+  unknown: number;
+  knownCoveragePercent: number;
+};
+
+export function getCompetitiveCoverage(sqlite: DatabaseSync): CompetitiveCoverage[] {
+  const rows = all(
+    sqlite,
+    `SELECT c.id, c.name, c.region,
+      SUM(CASE WHEN m.support_level IN ('full', 'superior') THEN 1 ELSE 0 END) AS full_count,
+      SUM(CASE WHEN m.support_level = 'partial' THEN 1 ELSE 0 END) AS partial_count,
+      SUM(CASE WHEN m.support_level = 'none' THEN 1 ELSE 0 END) AS missing_count,
+      SUM(CASE WHEN m.support_level = 'unknown' THEN 1 ELSE 0 END) AS unknown_count
+     FROM companies c
+     INNER JOIN matrix_cells m ON m.company_id = c.id
+     WHERE c.is_core = 1
+     GROUP BY c.id, c.name, c.region
+     ORDER BY full_count DESC, partial_count DESC, c.name`,
+  );
+  return rows.map((row) => {
+    const full = Number(row.full_count ?? 0);
+    const partial = Number(row.partial_count ?? 0);
+    const missing = Number(row.missing_count ?? 0);
+    const unknown = Number(row.unknown_count ?? 0);
+    const known = full + partial + missing;
+    return {
+      companyId: String(row.id),
+      companyName: String(row.name),
+      region: String(row.region),
+      full,
+      partial,
+      missing,
+      unknown,
+      knownCoveragePercent: known === 0 ? 0 : Math.round(((full + partial * 0.5) / known) * 100),
+    };
+  });
+}
+
 export function getChineseModels(sqlite: DatabaseSync) {
   return all(
     sqlite,
@@ -417,7 +553,8 @@ export function getStats(sqlite: DatabaseSync) {
     highGaps,
     opportunities: count("opportunities"),
     events: count("events"),
-    sources: count("sources"),
+    sources: Number(one(sqlite, `SELECT COUNT(*) AS n FROM sources WHERE enabled = 1`)?.n ?? 0),
+    roadmapItems: count("roadmap_items"),
   };
 }
 
@@ -491,8 +628,8 @@ export function insertEvent(
 ) {
   sqlite
     .prepare(
-      `INSERT INTO events (id, event_type, company_id, title, summary, occurred_at, source_url, severity, tags)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO events (id, event_type, company_id, title, summary, occurred_at, source_url, severity, tags, origin)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'collector')`,
     )
     .run(
       event.id,

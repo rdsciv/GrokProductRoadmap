@@ -12,12 +12,15 @@
     "seed": "npm run seed -w @fft/db",
     "dev": "npm run dev -w @fft/dashboard",
     "collect": "npm run collect -w @fft/collectors",
-    "report:baseline": "tsx scripts/generate-baseline-report.ts",
-    "report:weekly": "tsx scripts/generate-weekly-report.ts",
-    "typecheck": "npm run typecheck --workspaces --if-present"
+    "report:baseline": "node --import tsx scripts/generate-baseline-report.ts",
+    "report:weekly": "node --import tsx scripts/generate-weekly-report.ts",
+    "validate:data": "node --import tsx scripts/validate-data.ts",
+    "test": "node --import tsx --test tests/*.test.ts",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "check": "npm run validate:data && npm test && npm run typecheck && npm run build"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=22"
   },
   "devDependencies": {
     "tsx": "^4.20.3",

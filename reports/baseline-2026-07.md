@@ -2,13 +2,28 @@
 
 **Baseline date:** 2026-07-01  
 **As of:** 2026-07-22  
-**Generated:** 2026-07-23T04:56:52.473Z
+**Generated:** 2026-07-23T08:02:51.822Z
 
 Internal competitive intelligence for xAI / SpaceXAI product, GTM, and leadership. Every seeded claim should be re-verified against primary sources before executive decisions.
 
 ## Executive summary
 
 Western competitors have moved from model releases alone into **desktop Work super-apps**, **funded partner channels**, **coding-agent packaging**, and **hardware amplification**. Chinese labs are shipping **open-weight MoE frontier models** at high cadence and low cost. Grok has strong models (4.5), Grok Build, Imagine, and real enterprise identity features — gaps are primarily **packaging, visibility, channel, desktop, and Cursor productization**.
+
+## Proposed suite roadmap
+
+Directional strategy—not committed delivery. 8 recommendations across 6 product pillars.
+
+| Horizon | Pillar | Recommendation | Confidence | Owner | Desired outcome |
+|---|---|---|---|---|---|
+| now | core_api | Core Grok and API leadership scorecard | high | product | Give leadership a release-readiness view and defend Grok's price-performance position against fast-moving open-weight competitors. |
+| now | build | Unify Grok Build and Cursor | high | eng | Make Grok Build the default enterprise coding-agent platform with a clear migration story. |
+| now | enterprise | Enterprise proof and GTM system | high | gtm | Convert real enterprise capability into visible trust, pipeline, and adoption. |
+| next | work | Launch Grok Desktop Work | medium | product | Establish Grok as a daily knowledge-work environment rather than a collection of separate capabilities. |
+| next | imagine | Package Imagine as a creator platform | medium | product | Differentiate the Grok suite through integrated creative production rather than isolated generation features. |
+| next | ecosystem | Establish the Grok Partner Network | medium | partnerships | Scale enterprise deployment capacity and create a trusted channel around the Grok suite. |
+| later | ecosystem | Launch Grok Academy and certification | medium | marketing | Increase adoption, partner readiness, and long-term preference through a structured learning system. |
+| later | ecosystem | Scale Grokathon and community programs | medium | marketing | Grow the builder pipeline and create visible proof of what the complete Grok suite enables. |
 
 ## Priority gaps (scored)
 

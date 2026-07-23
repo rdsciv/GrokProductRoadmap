@@ -11,12 +11,14 @@ import {
   getGaps,
   getEvents,
   getChineseModels,
+  getRoadmapItems,
+  getPortfolioSummary,
 } from "../packages/db/src/index.ts";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(__dirname, "..");
-const week = new Date().toISOString().slice(0, 10);
-const outPath = path.join(repoRoot, "reports", `weekly-${week}.md`);
+const week = process.env.FFT_REPORT_DATE ?? new Date().toISOString().slice(0, 10);
+const outPath = process.env.FFT_REPORT_OUT ?? path.join(repoRoot, "reports", `weekly-${week}.md`);
 
 const { sqlite } = openDb();
 migrate(sqlite);
@@ -27,12 +29,28 @@ const highGaps = getGaps(sqlite).filter(
 );
 const recentEvents = getEvents(sqlite, 15);
 const cnModels = getChineseModels(sqlite);
+const roadmap = getRoadmapItems(sqlite);
+const portfolio = getPortfolioSummary(sqlite);
 
 const lines: string[] = [];
 lines.push(`# Weekly CI Summary — ${week}`);
 lines.push("");
 lines.push(`As-of baseline: ${metaMap.as_of ?? "unknown"}`);
 lines.push("");
+lines.push("## Portfolio status");
+lines.push("");
+lines.push(
+  `Proposed strategy: **${portfolio.now} Now / ${portfolio.next} Next / ${portfolio.later} Later** across ${portfolio.pillars} suite pillars; ${portfolio.highGaps} high-priority gaps remain open.`,
+);
+lines.push("");
+for (const horizon of ["now", "next", "later"] as const) {
+  lines.push(`### ${horizon[0]?.toUpperCase()}${horizon.slice(1)}`);
+  lines.push("");
+  for (const item of roadmap.filter((row) => row.horizon === horizon)) {
+    lines.push(`- **${item.title}** (${item.productPillar}, ${item.confidence} confidence) — ${item.desiredOutcome}`);
+  }
+  lines.push("");
+}
 lines.push("## Top actions for product / GTM / leadership");
 lines.push("");
 highGaps.slice(0, 5).forEach((g, i) => {

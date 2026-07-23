@@ -1111,3 +1111,140 @@ events:
     sourceUrl: https://support.claude.com/en/articles/12138966-release-notes
     severity: notable
     tags: [desktop, cowork]
+
+roadmapItems:
+  - id: roadmap-core-api-scorecard
+    title: Core Grok and API leadership scorecard
+    summary: Run one portfolio scorecard for quality, latency, cost, reliability, and real-time differentiation across consumer and API surfaces.
+    productPillar: core_api
+    horizon: now
+    confidence: high
+    ownerTeam: product
+    desiredOutcome: Give leadership a release-readiness view and defend Grok's price-performance position against fast-moving open-weight competitors.
+    successSignals:
+      - Weekly quality, latency, cost, and reliability review is operating
+      - Every frontier release has a named response or no-response decision
+      - API value proposition is consistent across product and GTM surfaces
+    linkedGapIds: [gap-chinese-velocity]
+    linkedOpportunityIds: [opp-cn-cost]
+    dependencies: [Model evaluation telemetry, API reliability metrics]
+    rationale: Core model and API leadership is the foundation for every suite product and needs a single Director-level operating view.
+
+  - id: roadmap-build-unification
+    title: Unify Grok Build and Cursor
+    summary: Sequence the CLI, IDE, managed-agent, and enterprise-control surfaces into one coherent Grok Build portfolio.
+    productPillar: build
+    horizon: now
+    confidence: high
+    ownerTeam: eng
+    desiredOutcome: Make Grok Build the default enterprise coding-agent platform with a clear migration story.
+    successSignals:
+      - Unified product architecture and naming decision
+      - Published migration milestones for managed and enterprise customers
+      - Shared enterprise controls across CLI, IDE, and cloud agents
+    linkedGapIds: [gap-cursor-migration]
+    linkedOpportunityIds: [opp-coding-agents]
+    dependencies: [Cursor transaction close, Identity and policy integration]
+    rationale: The coding portfolio is the highest-leverage near-term opportunity and the most visible integration risk.
+
+  - id: roadmap-enterprise-proof
+    title: Enterprise proof and GTM system
+    summary: Package existing SSO, SCIM, compliance, deployment, and support capabilities into a credible enterprise buying journey.
+    productPillar: enterprise
+    horizon: now
+    confidence: high
+    ownerTeam: gtm
+    desiredOutcome: Convert real enterprise capability into visible trust, pipeline, and adoption.
+    successSignals:
+      - Public compliance and deployment matrix
+      - Repeatable ROI narrative and sales enablement kit
+      - Named or anonymized enterprise proof points
+    linkedGapIds: [gap-enterprise-visibility]
+    linkedOpportunityIds: []
+    dependencies: [Customer permissions, Security and legal review]
+    rationale: Enterprise SSO exists; the immediate gap is packaging, proof, and buyer confidence rather than core identity functionality.
+
+  - id: roadmap-desktop-work
+    title: Launch Grok Desktop Work
+    summary: Create a unified desktop experience with Chat, Work, Build, search, and Imagine workflows on macOS and Windows.
+    productPillar: work
+    horizon: next
+    confidence: medium
+    ownerTeam: product
+    desiredOutcome: Establish Grok as a daily knowledge-work environment rather than a collection of separate capabilities.
+    successSignals:
+      - Coherent desktop information architecture and prototype
+      - Cross-surface task handoff between Work, Build, and Imagine
+      - Clear free, paid, business, and enterprise packaging
+    linkedGapIds: [gap-desktop-work]
+    linkedOpportunityIds: [opp-desktop-work]
+    dependencies: [Desktop shell, Workspace permissions, Build integration]
+    rationale: Competitors are consolidating agentic work into desktop super-apps, while Grok's differentiation is fragmented across surfaces.
+
+  - id: roadmap-partner-network
+    title: Establish the Grok Partner Network
+    summary: Build certification, co-sell, implementation, and directory mechanics for global and boutique service partners.
+    productPillar: ecosystem
+    horizon: next
+    confidence: medium
+    ownerTeam: partnerships
+    desiredOutcome: Scale enterprise deployment capacity and create a trusted channel around the Grok suite.
+    successSignals:
+      - Partner tier and incentive design approved
+      - Initial implementation partners recruited
+      - Certification and co-sell pilot operating
+    linkedGapIds: [gap-partner-network]
+    linkedOpportunityIds: [opp-partner-channel]
+    dependencies: [Program funding, Enterprise enablement content]
+    rationale: A credible services ecosystem expands reach and reduces adoption friction without requiring all deployment capacity in-house.
+
+  - id: roadmap-imagine-platform
+    title: Package Imagine as a creator platform
+    summary: Turn Imagine and Agent Mode into an end-to-end creative workflow with stronger product packaging, showcases, and creator distribution.
+    productPillar: imagine
+    horizon: next
+    confidence: medium
+    ownerTeam: product
+    desiredOutcome: Differentiate the Grok suite through integrated creative production rather than isolated generation features.
+    successSignals:
+      - Repeatable multi-step creator workflows
+      - Creator launch program and flagship showcases
+      - Hardware collaboration or controller decision
+    linkedGapIds: [gap-imagine-packaging]
+    linkedOpportunityIds: [opp-imagine-creators]
+    dependencies: [Agent workflow UX, Creator partnerships]
+    rationale: Imagine is capable but under-packaged relative to competing creative and hardware ecosystems.
+
+  - id: roadmap-academy
+    title: Launch Grok Academy and certification
+    summary: Create role-based learning paths for builders, educators, enterprise administrators, and implementation partners.
+    productPillar: ecosystem
+    horizon: later
+    confidence: medium
+    ownerTeam: marketing
+    desiredOutcome: Increase adoption, partner readiness, and long-term preference through a structured learning system.
+    successSignals:
+      - Builder and administrator learning paths live
+      - Certification tied to partner program
+      - Recurring educator and enterprise webinar cadence
+    linkedGapIds: [gap-education]
+    linkedOpportunityIds: [opp-education]
+    dependencies: [Partner curriculum, Documentation platform]
+    rationale: Education compounds product adoption and supplies the enablement layer required by partners and enterprise customers.
+
+  - id: roadmap-community-scale
+    title: Scale Grokathon and community programs
+    summary: Expand hackathons into recurring university, enterprise, Build, and Imagine tracks with meaningful sponsorship and prizes.
+    productPillar: ecosystem
+    horizon: later
+    confidence: medium
+    ownerTeam: marketing
+    desiredOutcome: Grow the builder pipeline and create visible proof of what the complete Grok suite enables.
+    successSignals:
+      - Recurring global event calendar
+      - University and enterprise sponsorship tracks
+      - Winning projects move into showcase or partner programs
+    linkedGapIds: [gap-hackathons]
+    linkedOpportunityIds: []
+    dependencies: [Community operations, Partner network]
+    rationale: A scaled community motion turns product capability into distribution, talent, and ecosystem momentum.

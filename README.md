@@ -2,7 +2,7 @@
 
 Living **Competitive Feature, Model Release, and Market Share Opportunity Tracker** for xAI / SpaceXAI.
 
-Tracks Western and Chinese frontier models and product surfaces, scores **explicit Grok gaps**, and flags **steal market share** moves tied to public financial signals.
+Tracks Western and Chinese frontier models and product surfaces, scores **explicit Grok gaps**, and turns them into a Director-level **Now / Next / Later product-suite roadmap**.
 
 **Baseline:** July 2026 · **Dashboard:** http://localhost:3456
 
@@ -16,6 +16,8 @@ npm install
 npm run seed          # load data/seed/baseline-2026-07.yaml → data/tracker.db
 npm run dev           # dashboard on :3456
 npm run collect       # daily source hash check + alerts
+npm run validate:data # schemas, relationships, and evidence-debt regression
+npm run check         # validation + tests + types + production build
 npm run report:baseline
 npm run report:weekly
 ```
@@ -33,7 +35,8 @@ npm run collect
 
 | View | Purpose |
 |------|---------|
-| **Command Center** | High gaps, critical events, opportunities, Chinese pulse |
+| **Command Center** | Suite roadmap, Director decisions, competitor coverage, critical signals |
+| **Roadmap** | Proposed Now / Next / Later portfolio across six Grok product pillars |
 | **Feature Matrix** | Companies × capabilities; Grok-gap primary lens |
 | **Gaps** | Scored gap board with recommended actions + sources |
 | **Opportunities** | Steal-share recommendations |
@@ -50,7 +53,7 @@ npm run collect
 ```
 apps/dashboard/       Next.js 15 analyst dashboard
 packages/schema/      Zod types + priority scoring
-packages/db/          Drizzle schema, SQLite, seed loader
+packages/db/          Versioned SQLite schema, queries, atomic seed loader
 packages/collectors/  HTTP change detection (proposal mode)
 data/seed/            Git-versioned curated baseline YAML
 data/sources.yaml     Monitored URLs
@@ -59,6 +62,8 @@ reports/              Baseline + weekly markdown
 ```
 
 **Curated truth** lives in YAML (PR-reviewable). **Collectors** only write scrape runs, content hashes, and events — they do **not** auto-edit matrix or gaps.
+
+Roadmap entries are optimistic strategic recommendations, not committed delivery. Their horizons deliberately avoid unsupported date precision.
 
 ### Priority scoring
 
@@ -87,8 +92,9 @@ High ≥ 3.5 · Medium ≥ 2.5 · Low &lt; 2.5
 
 1. Edit `data/seed/baseline-2026-07.yaml` (or add a new dated seed file).
 2. Require `sourceUrls` / reliability labels on claims; mark estimates.
-3. `npm run seed`
-4. Confirm in dashboard and re-run `npm run report:baseline` when doing a formal refresh.
+3. `npm run validate:data` — broken references, duplicate IDs, malformed URLs, and new missing evidence fail.
+4. `npm run seed` — curated tables update atomically while collector hashes, runs, and generated events are preserved.
+5. Confirm in dashboard and re-run `npm run report:baseline` when doing a formal refresh.
 
 ---
 
@@ -110,6 +116,7 @@ See `reports/baseline-2026-07.md` after first seed + report run.
 ## Governance
 
 - Every claim should have `sourceUrls` and as-of awareness.
+- Existing missing evidence is listed by identity in `data/evidence-debt.json`; it may shrink but cannot grow.
 - Estimates: `isEstimate: true` + `sourceReliability`.
 - Fair to Grok: Enterprise SSO/SCIM exist — gaps are packaging, desktop, channel, visibility, migration.
 - Prefer official primary sources over secondary blogs when both exist.
@@ -118,6 +125,6 @@ See `reports/baseline-2026-07.md` after first seed + report run.
 
 ## Stack
 
-Node 22+ (uses built-in `node:sqlite`) · TypeScript · Next.js 15 · Zod · YAML
+Node 22+ (uses built-in `node:sqlite`) · TypeScript · Next.js 15 · Zod · YAML · Node test runner
 
 No native SQLite addons — works on Node 26+ without node-gyp.

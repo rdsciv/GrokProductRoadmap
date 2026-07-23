@@ -4,6 +4,7 @@ import { fileURLToPath } from "node:url";
 import YAML from "yaml";
 import {
   TrackerSeedSchema,
+  SourcesDocumentSchema,
   computePriorityScore,
   priorityFromScore,
 } from "@fft/schema";
@@ -11,26 +12,39 @@ import { openDb, migrate, defaultDbPath } from "./client";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(__dirname, "../../..");
-const seedPath = path.join(repoRoot, "data", "seed", "baseline-2026-07.yaml");
-const sourcesPath = path.join(repoRoot, "data", "sources.yaml");
+const defaultSeedPath = path.join(repoRoot, "data", "seed", "baseline-2026-07.yaml");
+const defaultSourcesPath = path.join(repoRoot, "data", "sources.yaml");
 
 function loadYaml(filePath: string): unknown {
   return YAML.parse(fs.readFileSync(filePath, "utf8"));
 }
 
-export function seedDatabase(dbPath = defaultDbPath()) {
+export type SeedOptions = {
+  seedPath?: string;
+  sourcesPath?: string;
+  now?: () => Date;
+};
+
+export function seedDatabase(dbPath = defaultDbPath(), options: SeedOptions = {}) {
+  const seedPath = options.seedPath ?? defaultSeedPath;
+  const sourcesPath = options.sourcesPath ?? defaultSourcesPath;
   if (!fs.existsSync(seedPath)) {
     throw new Error(`Seed file not found: ${seedPath}`);
   }
 
   const parsed = TrackerSeedSchema.parse(loadYaml(seedPath));
+  const parsedSources = fs.existsSync(sourcesPath)
+    ? SourcesDocumentSchema.parse(loadYaml(sourcesPath))
+    : { sources: [] };
   const { sqlite, dbPath: resolved } = openDb(dbPath);
   migrate(sqlite);
 
+  sqlite.exec("BEGIN IMMEDIATE");
+  try {
   sqlite.exec(`
-    DELETE FROM scrape_runs;
-    DELETE FROM sources;
-    DELETE FROM events;
+    UPDATE sources SET company_id = NULL, enabled = 0;
+    DELETE FROM events WHERE origin = 'curated';
+    DELETE FROM roadmap_items;
     DELETE FROM financial_signals;
     DELETE FROM opportunities;
     DELETE FROM gaps;
@@ -38,13 +52,20 @@ export function seedDatabase(dbPath = defaultDbPath()) {
     DELETE FROM features;
     DELETE FROM products;
     DELETE FROM models;
-    DELETE FROM companies;
+    UPDATE companies SET is_core = 0;
     DELETE FROM meta;
   `);
 
   const insertCompany = sqlite.prepare(
     `INSERT INTO companies (id, name, region, type, website, notes, is_core)
-     VALUES (?, ?, ?, ?, ?, ?, ?)`,
+     VALUES (?, ?, ?, ?, ?, ?, ?)
+     ON CONFLICT(id) DO UPDATE SET
+       name = excluded.name,
+       region = excluded.region,
+       type = excluded.type,
+       website = excluded.website,
+       notes = excluded.notes,
+       is_core = excluded.is_core`,
   );
   for (const c of parsed.companies) {
     insertCompany.run(
@@ -222,8 +243,8 @@ export function seedDatabase(dbPath = defaultDbPath()) {
 
   const insertEvent = sqlite.prepare(
     `INSERT INTO events (
-      id, event_type, company_id, title, summary, occurred_at, source_url, severity, tags
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      id, event_type, company_id, title, summary, occurred_at, source_url, severity, tags, origin
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'curated')`,
   );
   for (const e of parsed.events) {
     insertEvent.run(
@@ -239,32 +260,54 @@ export function seedDatabase(dbPath = defaultDbPath()) {
     );
   }
 
-  if (fs.existsSync(sourcesPath)) {
-    const sourcesDoc = loadYaml(sourcesPath) as {
-      sources?: Array<{
-        id: string;
-        companyId?: string;
-        name: string;
-        url: string;
-        sourceType: string;
-        cadence?: string;
-        enabled?: boolean;
-        notes?: string;
-      }>;
-    };
+  const insertRoadmap = sqlite.prepare(
+    `INSERT INTO roadmap_items (
+      id, title, summary, product_pillar, horizon, confidence, owner_team,
+      desired_outcome, success_signals, linked_gap_ids, linked_opportunity_ids,
+      dependencies, rationale, source_urls
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+  );
+  for (const item of parsed.roadmapItems) {
+    insertRoadmap.run(
+      item.id,
+      item.title,
+      item.summary,
+      item.productPillar,
+      item.horizon,
+      item.confidence,
+      item.ownerTeam,
+      item.desiredOutcome,
+      JSON.stringify(item.successSignals),
+      JSON.stringify(item.linkedGapIds),
+      JSON.stringify(item.linkedOpportunityIds),
+      JSON.stringify(item.dependencies),
+      item.rationale,
+      JSON.stringify(item.sourceUrls),
+    );
+  }
+
+  if (parsedSources.sources.length > 0) {
     const insertSource = sqlite.prepare(
       `INSERT INTO sources (id, company_id, name, url, source_type, cadence, enabled, notes)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+       ON CONFLICT(id) DO UPDATE SET
+         company_id = excluded.company_id,
+         name = excluded.name,
+         url = excluded.url,
+         source_type = excluded.source_type,
+         cadence = excluded.cadence,
+         enabled = excluded.enabled,
+         notes = excluded.notes`,
     );
-    for (const s of sourcesDoc.sources ?? []) {
+    for (const s of parsedSources.sources) {
       insertSource.run(
         s.id,
         s.companyId ?? null,
         s.name,
         s.url,
         s.sourceType,
-        s.cadence ?? "daily",
-        s.enabled === false ? 0 : 1,
+        s.cadence,
+        s.enabled ? 1 : 0,
         s.notes ?? null,
       );
     }
@@ -273,7 +316,14 @@ export function seedDatabase(dbPath = defaultDbPath()) {
   const insertMeta = sqlite.prepare(`INSERT INTO meta (key, value) VALUES (?, ?)`);
   insertMeta.run("baseline_date", parsed.baselineDate);
   insertMeta.run("as_of", parsed.asOf);
-  insertMeta.run("seeded_at", new Date().toISOString());
+  insertMeta.run("seeded_at", (options.now ?? (() => new Date()))().toISOString());
+
+  sqlite.exec("COMMIT");
+  } catch (error) {
+    sqlite.exec("ROLLBACK");
+    sqlite.close();
+    throw error;
+  }
 
   sqlite.close();
 
@@ -289,6 +339,7 @@ export function seedDatabase(dbPath = defaultDbPath()) {
       opportunities: parsed.opportunities.length,
       financialSignals: parsed.financialSignals.length,
       events: parsed.events.length,
+      roadmapItems: parsed.roadmapItems.length,
     },
   };
 }

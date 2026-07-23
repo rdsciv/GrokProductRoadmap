@@ -4,6 +4,9 @@ dist/
 out/
 *.db
 *.db-journal
+*.db-shm
+*.db-wal
+*.tsbuildinfo
 data/tracker.db
 data/cache/
 .env
@@ -13,3 +16,4 @@ data/cache/
 .turbo/
 coverage/
 reports/alerts/
+.worktrees/

@@ -12,6 +12,9 @@ import {
   getSources as dbSources,
   getChineseModels as dbChinese,
   getStats as dbStats,
+  getRoadmapItems as dbRoadmap,
+  getPortfolioSummary as dbPortfolioSummary,
+  getCompetitiveCoverage as dbCompetitiveCoverage,
 } from "@fft/db";
 import { getSqlite } from "./db";
 
@@ -53,4 +56,13 @@ export function getChineseModels() {
 }
 export function getStats() {
   return dbStats(getSqlite());
+}
+export function getRoadmapItems() {
+  return dbRoadmap(getSqlite());
+}
+export function getPortfolioSummary() {
+  return dbPortfolioSummary(getSqlite());
+}
+export function getCompetitiveCoverage() {
+  return dbCompetitiveCoverage(getSqlite());
 }

@@ -5,7 +5,6 @@
  *
  * Does NOT auto-overwrite curated matrix/gap data (proposal mode).
  */
-import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -17,6 +16,7 @@ import {
   insertScrapeRun,
   insertEvent,
 } from "@fft/db";
+import { collectorEventId, hashContent } from "./core.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(__dirname, "../../..");
@@ -25,10 +25,6 @@ const cacheDir = path.join(repoRoot, "data", "cache");
 
 const USER_AGENT =
   "FrontierFeatureTracker/0.1 (+internal competitive intelligence; respectful crawl)";
-
-function hashContent(body: string): string {
-  return crypto.createHash("sha256").update(body).digest("hex");
-}
 
 async function fetchSource(
   url: string,
@@ -137,7 +133,7 @@ async function main() {
       console.log(`  Δ ${source.name}`);
 
       insertEvent(sqlite, {
-        id: `scrape-${source.id}-${Date.now()}`,
+        id: collectorEventId(source.id),
         eventType: "other",
         companyId: source.companyId,
         title: `Source change: ${source.name}`,
@@ -177,6 +173,7 @@ async function main() {
   if (alertLines.length) {
     console.log(`Alerts written to reports/alerts/${today}.md`);
   }
+  if (failures > 0) process.exitCode = 1;
 }
 
 main().catch((e) => {
