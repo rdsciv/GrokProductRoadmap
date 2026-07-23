@@ -6,6 +6,8 @@ Tracks Western and Chinese frontier models and product surfaces, scores **explic
 
 **Baseline:** July 2026 · **Dashboard:** http://localhost:3456
 
+The dashboard supports a fully static export and deploys to GitHub Pages through `.github/workflows/deploy-pages.yml` after `main` is pushed. The production base path is `/GrokProductRoadmap/`.
+
 ---
 
 ## Quick start

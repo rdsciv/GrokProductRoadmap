@@ -26,6 +26,8 @@
   box-sizing: border-box;
 }
 
+[hidden] { display: none !important; }
+
 html,
 body {
   margin: 0;
@@ -595,7 +597,15 @@ tr:hover td {
   padding: 0.4rem 0.8rem;
   cursor: pointer;
 }
-.clear-filters { min-height: 34px; display: inline-flex; align-items: center; padding: 0 0.45rem; }
+.filter-bar .clear-filters {
+  min-height: 34px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 0.45rem;
+  color: var(--accent);
+  background: transparent;
+  border-color: transparent;
+}
 .empty-state { color: var(--text-muted); padding: 1.25rem; text-align: center; border: 1px dashed var(--border); border-radius: 7px; }
 
 @media (max-width: 760px) {

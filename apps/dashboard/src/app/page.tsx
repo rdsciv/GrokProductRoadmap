@@ -10,8 +10,6 @@ import {
   getRoadmapItems,
 } from "@/lib/queries";
 
-export const dynamic = "force-dynamic";
-
 export default function CommandCenterPage() {
   const meta = getMeta();
   const roadmap = getRoadmapItems();

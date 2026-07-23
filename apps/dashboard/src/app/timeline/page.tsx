@@ -2,27 +2,9 @@ import { SeverityBadge } from "@/components/Badges";
 import { FilterBar } from "@/components/FilterBar";
 import { getEvents, getModels } from "@/lib/queries";
 
-export const dynamic = "force-dynamic";
-
-type Params = Record<string, string | string[] | undefined>;
-const value = (input: string | string[] | undefined) => typeof input === "string" ? input : "";
-
-export default async function TimelinePage({ searchParams }: { searchParams: Promise<Params> }) {
-  const params = await searchParams;
-  const q = value(params.q).toLowerCase();
-  const eventType = value(params.eventType);
-  const severity = value(params.severity);
-  const company = value(params.company);
-  const allEvents = getEvents(100);
-  const allModels = getModels().filter((item) => item.model.releaseDate);
-  const events = allEvents.filter(({ event, companyName }) =>
-    (!q || `${event.title} ${event.summary ?? ""} ${companyName ?? ""}`.toLowerCase().includes(q)) &&
-    (!eventType || event.eventType === eventType) &&
-    (!severity || event.severity === severity) &&
-    (!company || event.companyId === company));
-  const models = allModels.filter(({ model, companyName }) =>
-    !eventType && !severity && (!company || model.companyId === company) &&
-    (!q || `${model.name} ${model.capabilityDelta ?? ""} ${companyName ?? ""}`.toLowerCase().includes(q)));
+export default function TimelinePage() {
+  const events = getEvents(100);
+  const models = getModels().filter((item) => item.model.releaseDate);
 
   return (
     <>
@@ -32,23 +14,32 @@ export default async function TimelinePage({ searchParams }: { searchParams: Pro
       </p>
 
       <FilterBar
-        search={{ value: value(params.q), placeholder: "Search launches and capability deltas" }}
+        scope="timeline"
+        search={{ placeholder: "Search launches and capability deltas" }}
         selects={[
-          { name: "eventType", label: "Event type", value: eventType, options: [...new Set(allEvents.map(({ event }) => event.eventType))].sort().map((option) => ({ value: option, label: option.replaceAll("_", " ") })) },
-          { name: "severity", label: "Severity", value: severity, options: [
+          { name: "eventType", label: "Event type", options: [...new Set(events.map(({ event }) => event.eventType))].sort().map((option) => ({ value: option, label: option.replaceAll("_", " ") })) },
+          { name: "severity", label: "Severity", options: [
             { value: "critical", label: "Critical" }, { value: "notable", label: "Notable" }, { value: "info", label: "Info" },
           ] },
-          { name: "company", label: "Company", value: company, options: [...new Map(allEvents.filter(({ event }) => event.companyId).map(({ event, companyName }) => [event.companyId!, companyName ?? event.companyId!])).entries()].map(([optionValue, label]) => ({ value: optionValue, label })) },
+          { name: "company", label: "Company", options: [...new Map(events.filter(({ event }) => event.companyId).map(({ event, companyName }) => [event.companyId!, companyName ?? event.companyId!])).entries()].map(([optionValue, label]) => ({ value: optionValue, label })) },
         ]}
       />
+      <div className="empty-state" data-filter-empty="timeline" hidden>No timeline entries match these filters.</div>
 
       <div className="grid grid-2">
         <section>
           <h2>Events</h2>
           <div className="card" style={{ padding: "0.5rem 1rem" }}>
-            {events.length === 0 ? <div className="empty-state">No events match these filters.</div> : null}
             {events.map(({ event, companyName }) => (
-              <div key={event.id} className="timeline-item">
+              <div
+                key={event.id}
+                className="timeline-item"
+                data-filter-scope="timeline"
+                data-event-type={event.eventType}
+                data-severity={event.severity}
+                data-company={event.companyId ?? ""}
+                data-search={`${event.title} ${event.summary ?? ""} ${companyName ?? ""}`.toLowerCase()}
+              >
                 <div className="timeline-date">{event.occurredAt}</div>
                 <div>
                   <SeverityBadge severity={event.severity} />{" "}
@@ -74,9 +65,14 @@ export default async function TimelinePage({ searchParams }: { searchParams: Pro
         <section>
           <h2>Model releases</h2>
           <div className="card" style={{ padding: "0.5rem 1rem" }}>
-            {models.length === 0 ? <div className="empty-state">No model releases match these filters.</div> : null}
             {models.map(({ model, companyName, companyRegion }) => (
-              <div key={model.id} className="timeline-item">
+              <div
+                key={model.id}
+                className="timeline-item"
+                data-filter-scope="timeline"
+                data-company={model.companyId}
+                data-search={`${model.name} ${model.capabilityDelta ?? ""} ${companyName ?? ""}`.toLowerCase()}
+              >
                 <div className="timeline-date">{model.releaseDate}</div>
                 <div>
                   <strong>{model.name}</strong>{" "}

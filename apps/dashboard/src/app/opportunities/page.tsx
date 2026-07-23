@@ -1,8 +1,6 @@
 import { PriorityBadge } from "@/components/Badges";
 import { getOpportunities } from "@/lib/queries";
 
-export const dynamic = "force-dynamic";
-
 export default function OpportunitiesPage() {
   const opps = getOpportunities();
 

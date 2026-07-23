@@ -1,23 +1,16 @@
 import type { NextConfig } from "next";
 import path from "node:path";
 
+const isGitHubPages = process.env.GITHUB_ACTIONS === "true";
+
 const nextConfig: NextConfig = {
   transpilePackages: ["@fft/db", "@fft/schema"],
   // monorepo: allow importing from packages
   outputFileTracingRoot: path.join(__dirname, "../.."),
-  async headers() {
-    return [
-      {
-        source: "/:path*",
-        headers: [
-          { key: "X-Content-Type-Options", value: "nosniff" },
-          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
-          { key: "X-Frame-Options", value: "DENY" },
-          { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
-        ],
-      },
-    ];
-  },
+  output: "export",
+  trailingSlash: true,
+  basePath: isGitHubPages ? "/GrokProductRoadmap" : "",
+  assetPrefix: isGitHubPages ? "/GrokProductRoadmap/" : undefined,
 };
 
 export default nextConfig;

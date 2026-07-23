@@ -3,9 +3,9 @@ import { Nav } from "@/components/Nav";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Frontier Feature Tracker",
+  title: "Grok Product Roadmap",
   description:
-    "Competitive Feature, Model Release, and Market Share Opportunity Tracker for xAI / SpaceXAI",
+    "Director-level Grok product roadmap, competitive feature analysis, and market intelligence.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

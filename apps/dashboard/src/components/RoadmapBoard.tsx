@@ -53,7 +53,16 @@ export function RoadmapBoard({
                 {pillarItems
                   .filter((item) => item.horizon === horizon)
                   .map((item) => (
-                    <article className="roadmap-item" key={item.id}>
+                    <article
+                      className="roadmap-item"
+                      data-filter-scope="roadmap"
+                      data-pillar={item.productPillar}
+                      data-horizon={item.horizon}
+                      data-confidence={item.confidence}
+                      data-owner={item.ownerTeam}
+                      data-search={`${item.title} ${item.summary} ${item.desiredOutcome}`.toLowerCase()}
+                      key={item.id}
+                    >
                       <div className="roadmap-item-meta">
                         <span className={`confidence confidence-${item.confidence}`}>
                           {item.confidence} confidence

@@ -25,7 +25,7 @@ export function Nav() {
       <div className="nav-shell">
         <Link href="/" className="nav-brand">
           <span className="brand-mark">F</span>
-          <span>Frontier Feature Tracker</span>
+          <span>Grok Product Roadmap</span>
         </Link>
         <button
           className="nav-toggle"

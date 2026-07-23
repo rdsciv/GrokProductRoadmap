@@ -1,7 +1,5 @@
 import { getChineseModels, getCompanies, getGaps } from "@/lib/queries";
 
-export const dynamic = "force-dynamic";
-
 export default function ChineseVelocityPage() {
   const models = getChineseModels();
   const companies = getCompanies().filter((c) => c.region === "chinese");

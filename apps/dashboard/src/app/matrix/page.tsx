@@ -2,8 +2,6 @@ import { SupportCell } from "@/components/Badges";
 import { FilterBar } from "@/components/FilterBar";
 import { getCompanies, getFeatures, getMatrix, getMeta } from "@/lib/queries";
 
-export const dynamic = "force-dynamic";
-
 const MATRIX_COMPANIES = [
   "xai",
   "openai",
@@ -15,20 +13,10 @@ const MATRIX_COMPANIES = [
   "meta",
 ];
 
-type Params = Record<string, string | string[] | undefined>;
-const value = (input: string | string[] | undefined) => typeof input === "string" ? input : "";
-
-export default async function MatrixPage({ searchParams }: { searchParams: Promise<Params> }) {
-  const params = await searchParams;
-  const category = value(params.category);
-  const region = value(params.region);
-  const company = value(params.company);
-  const evidence = value(params.evidence);
+export default function MatrixPage() {
   const meta = getMeta();
-  const allFeatures = getFeatures();
-  const allCompanies = getCompanies().filter((c) => MATRIX_COMPANIES.includes(c.id));
-  const companies = allCompanies.filter((item) =>
-    (!region || item.region === region) && (!company || item.id === company));
+  const features = getFeatures();
+  const companies = getCompanies().filter((c) => MATRIX_COMPANIES.includes(c.id));
   // preserve MATRIX_COMPANIES order
   const ordered = MATRIX_COMPANIES.map((id) => companies.find((c) => c.id === id)).filter(
     Boolean,
@@ -39,15 +27,6 @@ export default async function MatrixPage({ searchParams }: { searchParams: Promi
   for (const c of cells) {
     cellMap.set(`${c.companyId}::${c.featureId}`, c);
   }
-  const features = allFeatures.filter((feature) => {
-    if (category && feature.category !== category) return false;
-    const displayedCells = ordered
-      .map((item) => cellMap.get(`${item.id}::${feature.id}`))
-      .filter(Boolean);
-    if (evidence === "missing") return displayedCells.some((cell) => !cell?.evidenceUrl);
-    if (evidence === "sourced") return displayedCells.length > 0 && displayedCells.every((cell) => cell?.evidenceUrl);
-    return true;
-  });
 
   return (
     <>
@@ -56,11 +35,11 @@ export default async function MatrixPage({ searchParams }: { searchParams: Promi
         Primary Grok-gap view · support levels as of {meta.as_of ?? "—"}. Hover cells for notes.
       </p>
 
-      <FilterBar selects={[
-        { name: "category", label: "Category", value: category, options: [...new Set(allFeatures.map((item) => item.category))].sort().map((option) => ({ value: option, label: option })) },
-        { name: "region", label: "Region", value: region, options: [{ value: "western", label: "Western" }, { value: "chinese", label: "Chinese" }] },
-        { name: "company", label: "Company", value: company, options: allCompanies.map((item) => ({ value: item.id, label: item.name })) },
-        { name: "evidence", label: "Evidence", value: evidence, options: [{ value: "sourced", label: "Fully sourced row" }, { value: "missing", label: "Has evidence debt" }] },
+      <FilterBar scope="matrix" selects={[
+        { name: "category", label: "Category", options: [...new Set(features.map((item) => item.category))].sort().map((option) => ({ value: option, label: option })) },
+        { name: "region", label: "Region", options: [{ value: "western", label: "Western" }, { value: "chinese", label: "Chinese" }] },
+        { name: "company", label: "Company", options: companies.map((item) => ({ value: item.id, label: item.name })) },
+        { name: "evidence", label: "Evidence", options: [{ value: "sourced", label: "Fully sourced row" }, { value: "missing", label: "Has evidence debt" }] },
       ]} />
 
       <div className="legend">
@@ -88,14 +67,14 @@ export default async function MatrixPage({ searchParams }: { searchParams: Promi
             <tr>
               <th>Feature</th>
               {ordered.map((c) => (
-                <th key={c.id}>{c.name.split(" ")[0]}</th>
+                <th key={c.id} data-matrix-company={c.id} data-region={c.region}>{c.name.split(" ")[0]}</th>
               ))}
             </tr>
           </thead>
           <tbody>
-            {features.length === 0 ? <tr><td colSpan={ordered.length + 1}>No matrix rows match these filters.</td></tr> : null}
+            <tr data-filter-empty="matrix" hidden><td colSpan={ordered.length + 1}>No matrix rows match these filters.</td></tr>
             {features.map((f) => (
-              <tr key={f.id}>
+              <tr key={f.id} data-filter-scope="matrix" data-category={f.category}>
                 <td>
                   <div>{f.name}</div>
                   <div className="muted" style={{ fontSize: "0.7rem" }}>
@@ -105,7 +84,12 @@ export default async function MatrixPage({ searchParams }: { searchParams: Promi
                 {ordered.map((c) => {
                   const cell = cellMap.get(`${c.id}::${f.id}`);
                   return (
-                    <td key={c.id}>
+                    <td
+                      key={c.id}
+                      data-matrix-company={c.id}
+                      data-region={c.region}
+                      data-evidence={cell?.evidenceUrl ? "yes" : "no"}
+                    >
                       {cell ? (
                         <SupportCell level={cell.supportLevel} notes={cell.notes} />
                       ) : (

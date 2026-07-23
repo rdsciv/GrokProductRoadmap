@@ -2,25 +2,8 @@ import { PriorityBadge } from "@/components/Badges";
 import { FilterBar } from "@/components/FilterBar";
 import { getGaps } from "@/lib/queries";
 
-export const dynamic = "force-dynamic";
-
-type Params = Record<string, string | string[] | undefined>;
-const value = (input: string | string[] | undefined) => typeof input === "string" ? input : "";
-
-export default async function GapsPage({ searchParams }: { searchParams: Promise<Params> }) {
-  const params = await searchParams;
-  const q = value(params.q).toLowerCase();
-  const priority = value(params.priority);
-  const status = value(params.status);
-  const owner = value(params.owner);
-  const grokStatus = value(params.grokStatus);
-  const allGaps = getGaps();
-  const gaps = allGaps.filter((gap) =>
-    (!q || `${gap.title} ${gap.description} ${gap.recommendedAction}`.toLowerCase().includes(q)) &&
-    (!priority || gap.priority === priority) &&
-    (!status || gap.status === status) &&
-    (!owner || gap.ownerTeam === owner) &&
-    (!grokStatus || gap.grokStatus === grokStatus));
+export default function GapsPage() {
+  const gaps = getGaps();
 
   return (
     <>
@@ -31,21 +14,31 @@ export default async function GapsPage({ searchParams }: { searchParams: Promise
       </p>
 
       <FilterBar
-        search={{ value: value(params.q), placeholder: "Search gaps and recommended actions" }}
+        scope="gaps"
+        search={{ placeholder: "Search gaps and recommended actions" }}
         selects={[
-          { name: "priority", label: "Priority", value: priority, options: [
+          { name: "priority", label: "Priority", options: [
             { value: "high", label: "High" }, { value: "medium", label: "Medium" }, { value: "low", label: "Low" },
           ] },
-          { name: "status", label: "Status", value: status, options: [...new Set(allGaps.map((gap) => gap.status))].sort().map((option) => ({ value: option, label: option })) },
-          { name: "owner", label: "Owner", value: owner, options: [...new Set(allGaps.map((gap) => gap.ownerTeam))].sort().map((option) => ({ value: option, label: option })) },
-          { name: "grokStatus", label: "Grok status", value: grokStatus, options: [...new Set(allGaps.map((gap) => gap.grokStatus))].sort().map((option) => ({ value: option, label: option })) },
+          { name: "status", label: "Status", options: [...new Set(gaps.map((gap) => gap.status))].sort().map((option) => ({ value: option, label: option })) },
+          { name: "owner", label: "Owner", options: [...new Set(gaps.map((gap) => gap.ownerTeam))].sort().map((option) => ({ value: option, label: option })) },
+          { name: "grokStatus", label: "Grok status", options: [...new Set(gaps.map((gap) => gap.grokStatus))].sort().map((option) => ({ value: option, label: option })) },
         ]}
       />
 
       <div className="stack">
-        {gaps.length === 0 ? <div className="empty-state">No gaps match these filters.</div> : null}
+        <div className="empty-state" data-filter-empty="gaps" hidden>No gaps match these filters.</div>
         {gaps.map((g) => (
-          <article key={g.id} className="card gap-card">
+          <article
+            key={g.id}
+            className="card gap-card"
+            data-filter-scope="gaps"
+            data-priority={g.priority}
+            data-status={g.status}
+            data-owner={g.ownerTeam}
+            data-grok-status={g.grokStatus}
+            data-search={`${g.title} ${g.description} ${g.recommendedAction}`.toLowerCase()}
+          >
             <div className="gap-meta">
               <PriorityBadge priority={g.priority} />
               <span className="badge badge-info">{g.status}</span>

@@ -1,21 +1,8 @@
 import { getSources } from "@/lib/queries";
 import { FilterBar } from "@/components/FilterBar";
 
-export const dynamic = "force-dynamic";
-
-type Params = Record<string, string | string[] | undefined>;
-const value = (input: string | string[] | undefined) => typeof input === "string" ? input : "";
-
-export default async function SourcesPage({ searchParams }: { searchParams: Promise<Params> }) {
-  const params = await searchParams;
-  const q = value(params.q).toLowerCase();
-  const cadence = value(params.cadence);
-  const status = value(params.status);
-  const allSources = getSources();
-  const sources = allSources.filter((source) =>
-    (!q || `${source.name} ${source.url} ${source.sourceType}`.toLowerCase().includes(q)) &&
-    (!cadence || source.cadence === cadence) &&
-    (!status || (status === "never" ? !source.lastStatus : source.lastStatus === status)));
+export default function SourcesPage() {
+  const sources = getSources();
 
   return (
     <>
@@ -26,10 +13,11 @@ export default async function SourcesPage({ searchParams }: { searchParams: Prom
       </p>
 
       <FilterBar
-        search={{ value: value(params.q), placeholder: "Search source names, types, and URLs" }}
+        scope="sources"
+        search={{ placeholder: "Search source names, types, and URLs" }}
         selects={[
-          { name: "cadence", label: "Cadence", value: cadence, options: [...new Set(allSources.map((source) => source.cadence))].sort().map((option) => ({ value: option, label: option })) },
-          { name: "status", label: "Health", value: status, options: [{ value: "ok", label: "Healthy" }, { value: "error", label: "Error" }, { value: "never", label: "Never checked" }] },
+          { name: "cadence", label: "Cadence", options: [...new Set(sources.map((source) => source.cadence))].sort().map((option) => ({ value: option, label: option })) },
+          { name: "status", label: "Health", options: [{ value: "ok", label: "Healthy" }, { value: "error", label: "Error" }, { value: "never", label: "Never checked" }] },
         ]}
       />
 
@@ -48,9 +36,15 @@ export default async function SourcesPage({ searchParams }: { searchParams: Prom
             </tr>
           </thead>
           <tbody>
-            {sources.length === 0 ? <tr><td colSpan={7}>No sources match these filters.</td></tr> : null}
+            <tr data-filter-empty="sources" hidden><td colSpan={7}>No sources match these filters.</td></tr>
             {sources.map((s) => (
-              <tr key={s.id}>
+              <tr
+                key={s.id}
+                data-filter-scope="sources"
+                data-cadence={s.cadence}
+                data-status={s.lastStatus ?? "never"}
+                data-search={`${s.name} ${s.url} ${s.sourceType}`.toLowerCase()}
+              >
                 <td>
                   <strong>{s.name}</strong>
                 </td>
