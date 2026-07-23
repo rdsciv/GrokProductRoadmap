@@ -1,132 +1,122 @@
-# Frontier Feature Tracker
+# Grok Product Roadmap
 
-Living **Competitive Feature, Model Release, and Market Share Opportunity Tracker** for xAI / SpaceXAI.
+**A source-backed competitive intelligence and portfolio-planning dashboard for the Grok product suite.**
 
-Tracks Western and Chinese frontier models and product surfaces, scores **explicit Grok gaps**, and turns them into a Director-level **Now / Next / Later product-suite roadmap**.
+It tracks Western and Chinese frontier models, product surfaces, financial signals, and explicit Grok gaps, then turns that evidence into a Director-level **Now / Next / Later roadmap**.
 
-**Baseline:** July 2026 · **Dashboard:** http://localhost:3456
+[![Deploy GitHub Pages](https://github.com/rdsciv/GrokProductRoadmap/actions/workflows/deploy-pages.yml/badge.svg)](https://github.com/rdsciv/GrokProductRoadmap/actions/workflows/deploy-pages.yml)
 
-The dashboard supports a fully static export and deploys to GitHub Pages through `.github/workflows/deploy-pages.yml` after `main` is pushed. The production base path is `/GrokProductRoadmap/`.
+## Live dashboard
 
----
+**https://rdsciv.github.io/GrokProductRoadmap/**
+
+The public site is a fully static Next.js export. No database or server is required at runtime.
+
+## What it answers
+
+- Where Grok has a genuine product or distribution gap—and where it does not.
+- Which gaps have the strongest revenue, demand, and competitive urgency.
+- How the suite should sequence Core + API, Work, Build, Imagine, Enterprise, and Ecosystem bets.
+- Which model releases, Chinese open-weight moves, and financial signals should change priorities.
+- What evidence supports each recommendation and where known evidence debt remains.
+
+## Dashboard views
+
+| View | Purpose |
+|---|---|
+| **Command Center** | Portfolio roadmap, leadership queue, competitor coverage, and critical signals |
+| **Roadmap** | Proposed Now / Next / Later initiatives across six Grok product pillars |
+| **Feature Matrix** | Companies × capabilities with Grok as the primary comparison lens |
+| **Gaps** | Scored gaps with recommended actions and source links |
+| **Opportunities** | Market-share moves connected to gaps and financial signals |
+| **Timeline** | Model releases and competitive events with capability deltas |
+| **Chinese Velocity** | DeepSeek, Kimi, Qwen, GLM, MiniMax, and ByteDance tracking |
+| **Financial** | ARR estimates, partner commitments, acquisitions, and reliability labels |
+| **Products** | Desktop, coding, hardware, partners, education, and enterprise surfaces |
+| **Sources** | Monitored official pages and local collector status |
+
+Roadmap entries are strategic recommendations, not delivery commitments. Horizons intentionally avoid unsupported date precision.
 
 ## Quick start
 
+Requires Node.js 22 or later.
+
 ```bash
-# From repo root
+git clone https://github.com/rdsciv/GrokProductRoadmap.git
+cd GrokProductRoadmap
 npm install
-npm run seed          # load data/seed/baseline-2026-07.yaml → data/tracker.db
-npm run dev           # dashboard on :3456
-npm run collect       # daily source hash check + alerts
-npm run validate:data # schemas, relationships, and evidence-debt regression
-npm run check         # validation + tests + types + production build
+npm run dev
+```
+
+Open http://localhost:3456.
+
+Useful commands:
+
+```bash
+npm run export-data      # YAML seed → static dashboard snapshot
+npm run seed             # YAML seed → local SQLite database
+npm run collect          # hash-monitor configured sources
 npm run report:baseline
 npm run report:weekly
+npm run check            # validation, tests, types, and production build
+npm run build:pages      # production export with the Pages base path
 ```
 
-Optional webhook for change alerts:
+Collectors run in proposal mode: they record scrape runs and events, but never auto-edit the curated matrix, gaps, or roadmap.
 
-```bash
-export FFT_WEBHOOK_URL=https://hooks.slack.com/services/...
-npm run collect
-```
+## Data model and governance
 
----
+| Layer | Role |
+|---|---|
+| `data/seed/baseline-2026-07.yaml` | Curated, reviewable source of truth |
+| `data/sources.yaml` | URLs and collection cadence |
+| `scripts/export-static-data.ts` | Produces the static dashboard snapshot |
+| `apps/dashboard/src/data/tracker.json` | Generated build-time data for GitHub Pages |
+| `data/tracker.db` | Optional local SQLite database; gitignored |
+| `data/evidence-debt.json` | Known unsourced claims that may shrink but cannot grow |
+| `reports/` | Baseline, weekly, and primary-source research reports |
 
-## What you get
+Data rules:
 
-| View | Purpose |
-|------|---------|
-| **Command Center** | Suite roadmap, Director decisions, competitor coverage, critical signals |
-| **Roadmap** | Proposed Now / Next / Later portfolio across six Grok product pillars |
-| **Feature Matrix** | Companies × capabilities; Grok-gap primary lens |
-| **Gaps** | Scored gap board with recommended actions + sources |
-| **Opportunities** | Steal-share recommendations |
-| **Timeline** | Model releases + competitive events |
-| **Chinese Velocity** | Open-weight cadence and cost pressure board |
-| **Financial** | ARR estimates, partner $ commitments, IR placeholders |
-| **Products** | Desktop Work, hardware, partners, education, enterprise |
-| **Sources** | Collector health and monitored URLs |
-
----
-
-## Architecture
-
-```
-apps/dashboard/       Next.js 15 analyst dashboard
-packages/schema/      Zod types + priority scoring
-packages/db/          Versioned SQLite schema, queries, atomic seed loader
-packages/collectors/  HTTP change detection (proposal mode)
-data/seed/            Git-versioned curated baseline YAML
-data/sources.yaml     Monitored URLs
-data/tracker.db       Runtime SQLite (gitignored)
-reports/              Baseline + weekly markdown
-```
-
-**Curated truth** lives in YAML (PR-reviewable). **Collectors** only write scrape runs, content hashes, and events — they do **not** auto-edit matrix or gaps.
-
-Roadmap entries are optimistic strategic recommendations, not committed delivery. Their horizons deliberately avoid unsupported date precision.
+1. Edit curated truth in YAML, then regenerate the snapshot.
+2. Require source URLs and as-of awareness for factual claims.
+3. Mark estimates with `isEstimate` and a reliability level.
+4. Prefer official primary sources over secondary coverage.
+5. Be fair to Grok: enterprise SSO/SCIM exist; key gaps are packaging, desktop, channel, visibility, and Cursor migration.
 
 ### Priority scoring
 
+```text
+priority score = 0.4 × revenue impact
+               + 0.3 × user demand
+               + 0.3 × competitive urgency
 ```
-priority_score = 0.4 * revenue_impact
-               + 0.3 * user_demand
-               + 0.3 * competitive_urgency
+
+Each component is scored from 1–5. **High ≥ 3.5**, **Medium ≥ 2.5**, otherwise **Low**.
+
+## Architecture
+
+```text
+apps/dashboard/       Next.js 15 static analyst dashboard
+packages/schema/      Zod schemas, relationships, and priority scoring
+packages/db/          Optional SQLite schema, queries, and atomic seed loader
+packages/collectors/  HTTP change detection in proposal mode
+data/seed/            Git-versioned curated baseline YAML
+scripts/              Static export, validation, and report generation
+reports/              Baseline, weekly, and research artifacts
+.github/workflows/    CI and GitHub Pages deployment
 ```
 
-High ≥ 3.5 · Medium ≥ 2.5 · Low &lt; 2.5
+The Pages workflow runs the full project check, builds with a repository-derived base path, uploads `apps/dashboard/out`, and deploys on every push to `main`.
 
----
+## Contributing
 
-## Cadence
+1. Edit `data/seed/baseline-2026-07.yaml` or add a new dated seed.
+2. Add sources and reliability labels for new claims.
+3. Run `npm run export-data` and inspect the dashboard.
+4. Run `npm run check` before opening a pull request.
+5. Regenerate baseline or weekly reports when the curated dataset changes materially.
 
-| Cadence | Job |
-|---------|-----|
-| **Daily** | `npm run collect` — product/docs/pricing hash changes → `reports/alerts/` |
-| **Weekly** | Human feature audit; edit seed YAML; `npm run seed`; `npm run report:weekly` |
-| **Real-time** | Critical model/product launches → add `events` in seed or insert via tooling |
-| **Quarterly** | Earnings deep-dive; refresh `financialSignals` from IR / 10-Q |
+## Disclaimer
 
----
-
-## Updating competitive data
-
-1. Edit `data/seed/baseline-2026-07.yaml` (or add a new dated seed file).
-2. Require `sourceUrls` / reliability labels on claims; mark estimates.
-3. `npm run validate:data` — broken references, duplicate IDs, malformed URLs, and new missing evidence fail.
-4. `npm run seed` — curated tables update atomically while collector hashes, runs, and generated events are preserved.
-5. Confirm in dashboard and re-run `npm run report:baseline` when doing a formal refresh.
-
----
-
-## Seeded High gaps (July 2026)
-
-1. No polished Work / desktop super-app (vs Claude Desktop, ChatGPT Work)
-2. Cursor → Grok Build productization incomplete ($60B deal, close Q3 2026)
-3. Imagine under-packaged vs Codex Micro hardware ecosystem
-4. Enterprise public GTM / case study visibility lag
-5. No formal funded partner / consultant network ($150M OpenAI / $100M Anthropic)
-6. No Google-class education / Academy stack
-7. Limited hackathon scale
-8. Chinese open-weight cost & velocity pressure (DeepSeek V4, Kimi K2.6)
-
-See `reports/baseline-2026-07.md` after first seed + report run.
-
----
-
-## Governance
-
-- Every claim should have `sourceUrls` and as-of awareness.
-- Existing missing evidence is listed by identity in `data/evidence-debt.json`; it may shrink but cannot grow.
-- Estimates: `isEstimate: true` + `sourceReliability`.
-- Fair to Grok: Enterprise SSO/SCIM exist — gaps are packaging, desktop, channel, visibility, migration.
-- Prefer official primary sources over secondary blogs when both exist.
-
----
-
-## Stack
-
-Node 22+ (uses built-in `node:sqlite`) · TypeScript · Next.js 15 · Zod · YAML · Node test runner
-
-No native SQLite addons — works on Node 26+ without node-gyp.
+This repository is for research and product strategy. ARR figures and some capability claims are press-reported estimates unless marked official; re-verify primary sources before executive or investment decisions. Third-party trademarks belong to their respective owners.

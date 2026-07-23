@@ -1,16 +1,18 @@
 import type { NextConfig } from "next";
 import path from "node:path";
 
-const isGitHubPages = process.env.GITHUB_ACTIONS === "true";
+// GitHub Pages project site: https://<user>.github.io/<repo>/
+const repoName = process.env.GITHUB_REPOSITORY?.split("/")[1] ?? "GrokProductRoadmap";
+const isGitHubPages = process.env.GITHUB_PAGES === "true";
 
 const nextConfig: NextConfig = {
-  transpilePackages: ["@fft/db", "@fft/schema"],
-  // monorepo: allow importing from packages
-  outputFileTracingRoot: path.join(__dirname, "../.."),
   output: "export",
   trailingSlash: true,
-  basePath: isGitHubPages ? "/GrokProductRoadmap" : "",
-  assetPrefix: isGitHubPages ? "/GrokProductRoadmap/" : undefined,
+  images: { unoptimized: true },
+  basePath: isGitHubPages ? `/${repoName}` : "",
+  assetPrefix: isGitHubPages ? `/${repoName}/` : undefined,
+  transpilePackages: ["@fft/schema"],
+  outputFileTracingRoot: path.join(__dirname, "../.."),
 };
 
 export default nextConfig;

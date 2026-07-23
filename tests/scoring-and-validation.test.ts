@@ -31,7 +31,7 @@ test("curated data has valid references and no new evidence debt", () => {
   };
   const result = validateTrackerData(seed, sources, debt.allowedMissingEvidence);
   assert.deepEqual(result.errors, []);
-  assert.equal(result.warnings.length, 96);
+  assert.equal(result.warnings.length, 119);
 });
 
 test("validation rejects broken references and newly unsourced claims", () => {

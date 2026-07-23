@@ -1,4 +1,4 @@
-import type { RoadmapItem } from "@fft/db";
+import type { RoadmapItem } from "@/lib/data";
 
 export const pillarLabels = {
   core_api: "Core + API",

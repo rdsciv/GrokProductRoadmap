@@ -1,5 +1,5 @@
-import { getSources } from "@/lib/queries";
 import { FilterBar } from "@/components/FilterBar";
+import { getSources } from "@/lib/data";
 
 export default function SourcesPage() {
   const sources = getSources();
@@ -8,8 +8,9 @@ export default function SourcesPage() {
     <>
       <h1>Sources & collector health</h1>
       <p className="subtitle">
-        Monitored URLs for daily/weekly/quarterly scrapes. Run{" "}
-        <code style={{ color: "var(--accent)" }}>npm run collect</code> to refresh hashes and alerts.
+        Monitored URLs for the local collector (`npm run collect`). On this static GitHub Pages
+        site, source health is not live — hashes are updated when you run the collector in a local
+        clone and re-publish.
       </p>
 
       <FilterBar
@@ -53,8 +54,10 @@ export default function SourcesPage() {
                 </td>
                 <td>{s.cadence}</td>
                 <td>{s.enabled ? "yes" : "no"}</td>
-                <td className="timeline-date">{s.lastCheckedAt?.slice(0, 19) ?? "never"}</td>
-                <td>{s.lastStatus ?? "—"}</td>
+                <td className="timeline-date">
+                  {s.lastCheckedAt ? String(s.lastCheckedAt).slice(0, 19) : "— (static site)"}
+                </td>
+                <td>{s.lastStatus ? String(s.lastStatus) : "—"}</td>
                 <td>
                   <a href={s.url} target="_blank" rel="noreferrer">
                     open

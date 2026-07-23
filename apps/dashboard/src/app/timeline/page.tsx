@@ -1,6 +1,6 @@
 import { SeverityBadge } from "@/components/Badges";
 import { FilterBar } from "@/components/FilterBar";
-import { getEvents, getModels } from "@/lib/queries";
+import { getEvents, getModels } from "@/lib/data";
 
 export default function TimelinePage() {
   const events = getEvents(100);

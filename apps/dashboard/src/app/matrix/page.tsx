@@ -1,15 +1,16 @@
 import { SupportCell } from "@/components/Badges";
 import { FilterBar } from "@/components/FilterBar";
-import { getCompanies, getFeatures, getMatrix, getMeta } from "@/lib/queries";
+import { getCompanies, getFeatures, getMatrix, getMeta } from "@/lib/data";
 
 const MATRIX_COMPANIES = [
   "xai",
   "openai",
   "anthropic",
   "google",
-  "microsoft",
+  "thinking-machines",
   "deepseek",
   "moonshot",
+  "zhipu",
   "meta",
 ];
 

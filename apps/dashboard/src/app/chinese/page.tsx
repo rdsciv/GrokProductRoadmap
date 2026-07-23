@@ -1,4 +1,4 @@
-import { getChineseModels, getCompanies, getGaps } from "@/lib/queries";
+import { getChineseModels, getCompanies, getGaps } from "@/lib/data";
 
 export default function ChineseVelocityPage() {
   const models = getChineseModels();

@@ -1,6 +1,6 @@
 import { FilterBar } from "@/components/FilterBar";
 import { pillarLabels, RoadmapBoard } from "@/components/RoadmapBoard";
-import { getRoadmapItems } from "@/lib/queries";
+import { getRoadmapItems } from "@/lib/data";
 
 export default function RoadmapPage() {
   const items = getRoadmapItems();

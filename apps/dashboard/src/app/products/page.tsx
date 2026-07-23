@@ -1,4 +1,4 @@
-import { getProducts } from "@/lib/queries";
+import { getProducts } from "@/lib/data";
 
 export default function ProductsPage() {
   const products = getProducts();

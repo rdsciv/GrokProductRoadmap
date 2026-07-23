@@ -1,5 +1,5 @@
 import { PriorityBadge } from "@/components/Badges";
-import { getOpportunities } from "@/lib/queries";
+import { getOpportunities } from "@/lib/data";
 
 export default function OpportunitiesPage() {
   const opps = getOpportunities();

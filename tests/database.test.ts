@@ -65,7 +65,7 @@ test("reseeding is idempotent and preserves collector operational history", () =
       next: 3,
       later: 2,
       highConfidence: 3,
-      highGaps: 5,
+      highGaps: 8,
       pillars: 6,
     });
     assert.ok(getCompetitiveCoverage(second).some((row) => row.companyId === "xai"));
@@ -88,7 +88,7 @@ test("a failed seed rolls back to the prior curated state", () => {
     const sqlite = openDb(dbPath).sqlite;
     const companies = sqlite.prepare(`SELECT COUNT(*) AS count FROM companies`).get() as { count: number };
     const roadmap = sqlite.prepare(`SELECT COUNT(*) AS count FROM roadmap_items`).get() as { count: number };
-    assert.equal(companies.count, 15);
+    assert.equal(companies.count, 16);
     assert.equal(roadmap.count, 8);
     sqlite.close();
   } finally {

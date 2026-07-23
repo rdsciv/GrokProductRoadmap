@@ -459,6 +459,16 @@ tr:hover td {
   margin-bottom: 1.25rem;
   overflow: hidden;
 }
+
+.research-heat {
+  border-color: var(--high);
+  margin-bottom: 1rem;
+}
+
+.research-heat p {
+  margin: 0.35rem 0 0;
+  color: var(--muted);
+}
 .portfolio-strip > div {
   display: flex;
   justify-content: space-between;
