@@ -47,7 +47,9 @@ for (const horizon of ["now", "next", "later"] as const) {
   lines.push(`### ${horizon[0]?.toUpperCase()}${horizon.slice(1)}`);
   lines.push("");
   for (const item of roadmap.filter((row) => row.horizon === horizon)) {
-    lines.push(`- **${item.title}** (${item.productPillar}, ${item.confidence} confidence) — ${item.desiredOutcome}`);
+    lines.push(
+      `- **${item.title}** (${item.productPillar}, ${item.confidence} confidence) — ${item.desiredOutcome.replace(/\s+/g, " ").trim()}`,
+    );
   }
   lines.push("");
 }

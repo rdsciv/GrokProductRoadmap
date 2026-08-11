@@ -78,8 +78,8 @@ sources:
     cadence: daily
   - id: kimi-blog
     companyId: moonshot
-    name: Kimi blog
-    url: https://www.kimi.com/blog/kimi-k2-6
+    name: Kimi K3 primary post
+    url: https://www.kimi.com/blog/kimi-k3
     sourceType: blog
     cadence: daily
   - id: qwen-home
