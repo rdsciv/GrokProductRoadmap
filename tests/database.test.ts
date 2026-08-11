@@ -60,11 +60,11 @@ test("reseeding is idempotent and preserves collector operational history", () =
     assert.equal(runs.count, 1);
     assert.equal(collectorEvents.count, 1);
     assert.deepEqual(getPortfolioSummary(second), {
-      roadmapItems: 8,
-      now: 3,
-      next: 3,
+      roadmapItems: 11,
+      now: 5,
+      next: 4,
       later: 2,
-      highConfidence: 3,
+      highConfidence: 5,
       highGaps: 8,
       pillars: 6,
     });
@@ -89,7 +89,7 @@ test("a failed seed rolls back to the prior curated state", () => {
     const companies = sqlite.prepare(`SELECT COUNT(*) AS count FROM companies`).get() as { count: number };
     const roadmap = sqlite.prepare(`SELECT COUNT(*) AS count FROM roadmap_items`).get() as { count: number };
     assert.equal(companies.count, 16);
-    assert.equal(roadmap.count, 8);
+    assert.equal(roadmap.count, 11);
     sqlite.close();
   } finally {
     fs.rmSync(temp, { recursive: true, force: true });
@@ -120,7 +120,7 @@ test("weekly reports support deterministic dates and include portfolio status", 
     const report = fs.readFileSync(reportPath, "utf8");
     assert.match(report, /^# Weekly CI Summary — 2026-07-23/m);
     assert.match(report, /## Portfolio status/);
-    assert.match(report, /3 Now \/ 3 Next \/ 2 Later/);
+    assert.match(report, /5 Now \/ 4 Next \/ 2 Later/);
   } finally {
     fs.rmSync(temp, { recursive: true, force: true });
   }

@@ -1,7 +1,7 @@
 {
   "baselineDate": "2026-07-01",
   "asOf": "2026-07-23",
-  "exportedAt": "2026-07-23T12:30:01.981Z",
+  "exportedAt": "2026-08-11T16:27:00.881Z",
   "companies": [
     {
       "id": "xai",
@@ -2171,6 +2171,91 @@
   ],
   "roadmapItems": [
     {
+      "id": "roadmap-open-weight-response",
+      "title": "Decide and announce open-weight or distill response",
+      "summary": "Resolve the closed-only posture vs K3 / GLM-5.2 / Inkling with a public strategy decision (full open, partial distill, or hybrid ladder) and distribution path — proposed, not date-committed.\n",
+      "productPillar": "core_api",
+      "horizon": "now",
+      "confidence": "high",
+      "ownerTeam": "product",
+      "desiredOutcome": "Leadership has a named open/distill response so builders and cost-sensitive enterprises see a Grok path in the open-weight era, not silence.\n",
+      "successSignals": [
+        "Written decision on open vs distill vs hybrid with licensing",
+        "Public announcement path (blog / HF / API dual) approved or explicitly deferred with rationale",
+        "Builder-facing FAQ and eval access plan for the chosen path"
+      ],
+      "linkedGapIds": [
+        "gap-open-weight-era"
+      ],
+      "linkedOpportunityIds": [
+        "opp-open-strategy"
+      ],
+      "dependencies": [
+        "Legal licensing review",
+        "Model release capacity",
+        "Comms approval"
+      ],
+      "rationale": "Score-5 gap with no prior roadmap link. July research treats open-weight silence as the top structural risk; this item is proposed strategy only, not a ship date.\n",
+      "sourceUrls": []
+    },
+    {
+      "id": "roadmap-frontier-narrative",
+      "title": "Own the public frontier generation narrative",
+      "summary": "Publish reproducible coding/agent benchmarks vs Sol, Fable, and K3-class models and keep a named response cadence for every frontier release — proposed operating rhythm, not a model ship date.\n",
+      "productPillar": "core_api",
+      "horizon": "now",
+      "confidence": "high",
+      "ownerTeam": "product",
+      "desiredOutcome": "Grok is a default answer in Jul 2026-class \"what's the frontier model?\" coverage via transparent evals and a standing response process.\n",
+      "successSignals": [
+        "Public coding/agent benchmark suite journalists can reproduce",
+        "Weekly frontier-release response checklist for product + comms",
+        "Flagship or Build specialized SOTA claim plan when lagging narrative"
+      ],
+      "linkedGapIds": [
+        "gap-frontier-generation"
+      ],
+      "linkedOpportunityIds": [
+        "opp-coding-agents"
+      ],
+      "dependencies": [
+        "Eval harness ownership",
+        "Model training roadmap",
+        "External comms"
+      ],
+      "rationale": "Score-5 gap was unlinked. Competitive heat is generation narrative as much as raw quality; keep language directional, not committed delivery.\n",
+      "sourceUrls": []
+    },
+    {
+      "id": "roadmap-agent-harness-work",
+      "title": "Productize long-horizon agent harness (web-first Work)",
+      "summary": "Turn multi-hour jobs, durable artifacts, and computer use into a first-class Grok Work surface with harness-normalized public benches — proposed product direction, not a hard GA date.\n",
+      "productPillar": "work",
+      "horizon": "now",
+      "confidence": "high",
+      "ownerTeam": "product",
+      "desiredOutcome": "Multi-hour agency is a product (Work harness), not a chat demo, so model quality converts to sticky agentic usage.\n",
+      "successSignals": [
+        "Web-first multi-hour job UX with durable artifacts",
+        "Computer-use path defined for Work and Build handoff",
+        "Harness-normalized benches vs Claude Code / Codex / Kimi Code on same runner"
+      ],
+      "linkedGapIds": [
+        "gap-agent-harness",
+        "gap-agentic-coding-product"
+      ],
+      "linkedOpportunityIds": [
+        "opp-agent-harness"
+      ],
+      "dependencies": [
+        "Agent runtime",
+        "Artifact store",
+        "Computer-use stack"
+      ],
+      "rationale": "Score 4.7–5 agent packaging gaps had no dedicated Now item. Distinct from Cursor close execution and from full desktop shell (still Next).\n",
+      "sourceUrls": []
+    },
+    {
       "id": "roadmap-core-api-scorecard",
       "title": "Core Grok and API leadership scorecard",
       "summary": "Run one portfolio scorecard for quality, latency, cost, reliability, and real-time differentiation across consumer and API surfaces.",
@@ -2212,7 +2297,8 @@
         "Shared enterprise controls across CLI, IDE, and cloud agents"
       ],
       "linkedGapIds": [
-        "gap-cursor-migration"
+        "gap-cursor-migration",
+        "gap-agentic-coding-product"
       ],
       "linkedOpportunityIds": [
         "opp-coding-agents"
@@ -2229,8 +2315,8 @@
       "title": "Enterprise proof and GTM system",
       "summary": "Package existing SSO, SCIM, compliance, deployment, and support capabilities into a credible enterprise buying journey.",
       "productPillar": "enterprise",
-      "horizon": "now",
-      "confidence": "high",
+      "horizon": "next",
+      "confidence": "medium",
       "ownerTeam": "gtm",
       "desiredOutcome": "Convert real enterprise capability into visible trust, pipeline, and adoption.",
       "successSignals": [
@@ -2246,7 +2332,7 @@
         "Customer permissions",
         "Security and legal review"
       ],
-      "rationale": "Enterprise SSO exists; the immediate gap is packaging, proof, and buyer confidence rather than core identity functionality.",
+      "rationale": "Enterprise SSO exists; packaging still matters, but score-5 model/open/agent gaps take Now slots. Visibility remains proposed Next work, not a deprioritized abandon.\n",
       "sourceUrls": []
     },
     {
@@ -2939,8 +3025,8 @@
     {
       "id": "kimi-blog",
       "companyId": "moonshot",
-      "name": "Kimi blog",
-      "url": "https://www.kimi.com/blog/kimi-k2-6",
+      "name": "Kimi K3 primary post",
+      "url": "https://www.kimi.com/blog/kimi-k3",
       "sourceType": "blog",
       "cadence": "daily",
       "enabled": true,

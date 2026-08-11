@@ -1,9 +1,15 @@
+import { PriorityBadge } from "@/components/Badges";
 import { getChineseModels, getCompanies, getGaps } from "@/lib/data";
+
+/** Strategic gaps that frame CN open-weight / cost pressure (legacy gap-chinese-velocity split). */
+const CN_STRATEGIC_GAP_IDS = ["gap-open-weight-era", "gap-cn-cost-velocity"] as const;
 
 export default function ChineseVelocityPage() {
   const models = getChineseModels();
   const companies = getCompanies().filter((c) => c.region === "chinese");
-  const gap = getGaps().find((g) => g.id === "gap-chinese-velocity");
+  const gaps = getGaps().filter((g) =>
+    (CN_STRATEGIC_GAP_IDS as readonly string[]).includes(g.id),
+  );
 
   return (
     <>
@@ -13,11 +19,22 @@ export default function ChineseVelocityPage() {
         jumps from DeepSeek, Moonshot/Kimi, Qwen, GLM, MiniMax, ByteDance.
       </p>
 
-      {gap ? (
-        <div className="card" style={{ marginBottom: "1rem", borderColor: "var(--high)" }}>
-          <h2 style={{ color: "var(--high)" }}>Strategic flag</h2>
-          <p style={{ marginTop: 0 }}>{gap.description}</p>
-          <div className="action">{gap.recommendedAction}</div>
+      {gaps.length > 0 ? (
+        <div style={{ display: "grid", gap: "0.75rem", marginBottom: "1rem" }}>
+          {gaps.map((gap) => (
+            <div key={gap.id} className="card" style={{ borderColor: "var(--high)" }}>
+              <div className="gap-meta" style={{ marginBottom: "0.35rem" }}>
+                <span className="eyebrow" style={{ color: "var(--high)" }}>
+                  Strategic flag
+                </span>
+                <PriorityBadge priority={gap.priority} />
+                <span className="muted">score {gap.priorityScore}</span>
+              </div>
+              <h2 style={{ marginTop: 0, marginBottom: "0.35rem" }}>{gap.title}</h2>
+              <p style={{ marginTop: 0 }}>{gap.description}</p>
+              <div className="action">{gap.recommendedAction}</div>
+            </div>
+          ))}
         </div>
       ) : null}
 

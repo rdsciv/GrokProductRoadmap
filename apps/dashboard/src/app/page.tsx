@@ -15,7 +15,8 @@ export default function CommandCenterPage() {
   const roadmap = getRoadmapItems();
   const portfolio = getPortfolioSummary();
   const gaps = getGaps().filter((gap) => gap.status !== "won" && gap.status !== "wontfix");
-  const decisions = gaps.filter((gap) => gap.priority === "high").slice(0, 4);
+  // Full high-priority queue (score-sorted in getGaps) so open-weight / frontier / harness are not truncated.
+  const decisions = gaps.filter((gap) => gap.priority === "high");
   const events = getEvents(6);
   const coverageFocus = getCompetitiveCoverage()
     .filter((row) => row.companyId === "xai" || row.full + row.partial + row.missing >= 8)
@@ -76,11 +77,14 @@ export default function CommandCenterPage() {
           <div className="decision-list">
             {decisions.map((gap, index) => (
               <article className="decision-item" key={gap.id}>
-                <span className="decision-number">0{index + 1}</span>
+                <span className="decision-number">
+                  {String(index + 1).padStart(2, "0")}
+                </span>
                 <div>
                   <div className="gap-meta">
                     <PriorityBadge priority={gap.priority} />
                     <span className="tag">{gap.ownerTeam}</span>
+                    <span className="tag">{gap.grokStatus}</span>
                     <span className="muted">score {gap.priorityScore}</span>
                   </div>
                   <h3>{gap.title}</h3>
